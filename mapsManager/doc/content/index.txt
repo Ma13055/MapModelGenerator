@@ -1,0 +1,160 @@
+mapsManagerName - English
+========================
+
+.. toctree::
+   :hidden:
+
+   index_j
+
+
+Introduction
+============
+
+
+For a full list of classes and functions, see the `API documentation`_.
+
+.. _`API Documentation`:
+   doxygen/html/index.html
+
+Requirements
+============
+
+mapsManager uses the `CMake build system`. You will need at least version
+2.8 to be able to build the component.
+
+.. _`CMAke build system`:
+   http://www.cmake.org
+
+
+Installation
+============
+
+Binary
+------
+
+Users of Windows can install the component using the binary installer. This
+will install the component and all its necessary dependencies. It is the
+recommended method of installation in Windows.
+
+- Download the installer from the website.
+- Double-click the executable file to begin installation.
+- Follow the instructions to install the component.
+- You may need to restart your computer for environment variable changes
+  to take effect before using the component.
+
+The component can be launched by double-clicking the
+``mapsManagerComp`` executable. The ``mapsManager`` library
+is available for loading into a manager, using the initialisation function
+``mapsManagerInit``.
+
+From source
+-----------
+
+Follow these steps to install mapsManager from source in any operating
+system:
+
+- Download the source, either from the repository or a source archive,
+  and extract it somewhere::
+
+    tar -xvzf mapsManager-1.0.0.tar.gz
+
+- Change to the directory containing the extracted source::
+
+    cd mapsManager-1.0.0
+
+- Create a directory called ``build``::
+
+    mkdir build
+
+- Change to that directory::
+
+    cd build
+
+- Run cmake or cmake-gui::
+
+    cmake ../
+
+- If no errors occurred, run make::
+
+    make
+
+- Finally, install the component. Ensure the necessary permissions to
+  install into the chosen prefix are available::
+
+    make install
+
+- The install destination can be changed by executing ccmake and changing
+  the variable ``CMAKE_INSTALL_PREFIX``::
+
+    ccmake ../
+
+The component is now ready for use. See the next section for instructions on
+configuring the component.
+
+mapsManager can be launched in stand-alone mode by executing the
+``mapsManagerComp`` executable (installed into ``${prefix}/components/bin``).
+Alternatively, ``libmapsManager.so`` can be loaded into a manager, using the
+initialisation function ``mapsManagerInit``. This shared object can be found in
+``${prefix}/components/lib`` or ``${prefix}/components/lib64``.
+
+
+Configuration
+=============
+
+The available configuration parameters are described below:
+
+================ ================== ================ ======
+Parameter        Data type          Default Value    Effect
+================ ================== ================ ======
+01_ImageView     string             OFF              画像表示を選択するための変数
+02_SelectPictNum int                0                画像処理及び線画化処理を行う画像の番号を指定できる<br/>(先のステップから戻ることができる）
+03_SaveSpace     string             C:\\tmp\\maps\\linemaps 完成したラインマップの座標情報群と描画画像を保存する先
+================ ================== ================ ======
+
+Ports
+=====
+
+The ports provided by the component are described below:
+
+=============== =========== ============================== =======
+Name            Type        Data type                      Purpose
+=============== =========== ============================== =======
+receiveCamImg   InPort      RTC::CameraImage               画像データを受け取るポート
+receiveFlagData InPort      RTC::TimedShort                画像データの送り先から現在の送信状態を受け取るポート
+tempFloderPath  InPort      RTC::TimedString               一時作業領域のパスを受け取るためのポート
+clickPoint      InPort      RTC::TimedPoint3D              UIでクリックされた座標を受け取るポート
+compNormalizedMap InPort      RTC::CameraImage               地図の正規化処理が終了した地図画像データを受け取るポート
+compLineMap     InPort      RTC::TimedShortSeq             ラインマップ生成処理の結果を受け取るポート
+backCamImg      OutPort     RTC::CameraImage               送り先から受け取った地図画像を、そのまま返すためのポート
+tempFolderPathOut OutPort     RTC::TimedString               一時作業領域のパスを送るためのポート
+makeNormSrcImg  OutPort     RTC::CameraImage               地図の正規化処理を行いたい画像を送るポート
+makeNormSrcImgPath OutPort     RTC::TimedString               地図の正規化処理を行いたい画像のパスを送るポート
+compNormImg     OutPort     RTC::CameraImage               正規化処理が完了した画像を送るポート
+compNormImgPath OutPort     RTC::TimedString               正規化処理が完了した画像のパスを送るポート
+makeLineSrcImg  OutPort     RTC::CameraImage               ラインマップに変換したい正規化済み地図画像データを送るポート
+makeLineSrcImgPath OutPort     RTC::TimedString               ラインマップに変換したい正規化済み地図画像データのパスを送るポート
+compLineImg     OutPort     RTC::CameraImage               ラインマップの座標群情報を描画した画像を送るためのポート
+compLineImgPath OutPort     RTC::TimedString               ラインマップの座標群情報を描画した画像のパスを送るためのポート
+lineMaps        OutPort     RTC::TimedShortSeq             全地図画像に対するラインマップの座標群情報を送るためのポート
+lineMapsPath    OutPort     RTC::TimedString               ラインマップの保存データへのパスを、全地図のパス一括で送るためのポート
+=============== =========== ============================== =======
+
+Examples
+========
+
+An example configuration file is provided in the
+``${prefix}/components/share/mapsManager/examples/conf/`` directory.
+
+Changelog
+=========
+
+
+
+License
+=======
+
+This software is developed at the National Institute of Advanced
+Industrial Science and Technology. Approval number H23PRO-????. This
+software is licensed under the Lesser General Public License. See
+COPYING.LESSER.
+

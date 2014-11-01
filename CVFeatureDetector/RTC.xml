@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):Image Processing:CVFeatureDetector:1.1.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="CVFeatureDetector" rtc:updateDate="2014-10-30T13:22:27+09:00" rtc:creationDate="2014-10-30T13:22:27+09:00" rtc:version="1.1.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="与えられた画像に特徴点検出を行う" rtc:category="Image Processing" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="CVFeatureDetector">
+        <rtcDoc:Doc rtcDoc:reference="" rtcDoc:license="" rtcDoc:creator="立川将(Tatekawa Masaru)&lt;br/&gt;Email:y09148@shibaura-it.ac.jp" rtcDoc:algorithm="入力画像に対して特徴検出を行い、結果を描画しつつTimedFloatSeqに配列化して送る&lt;br/&gt;入力やコンフィギュの値を常に確認し、どこか一つでも変更があるとエッジ再検出を行う&lt;br/&gt;出力ポートに送信されるタイミングは、検出後一度きり" rtcDoc:inout="入力&lt;br/&gt;srcImage[CameraImage] - 特徴点検出の対象画像を受け取る&lt;br/&gt;&lt;br/&gt;出力&lt;br/&gt;featurePoint [TimedFloatSeq] - 特徴点検出の結果となるKeyPointを配列化したデータを送る" rtcDoc:description="入力された画像に対して、コンフィギュレーションパラメータで選択されたメソッドやアダプタ、入力された閾値を用いて特徴点検出を行うコンポーネント"/>
+        <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
+    </rtc:BasicInfo>
+    <rtc:Actions>
+        <rtc:OnInitialize xsi:type="rtcDoc:action_status_doc" rtc:implemented="true"/>
+        <rtc:OnFinalize xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnStartup xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnShutdown xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnActivated xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="初期化を行う"/>
+        </rtc:OnActivated>
+        <rtc:OnDeactivated xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="表示ウィンドウを閉じる"/>
+        </rtc:OnDeactivated>
+        <rtc:OnAborting xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnError xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnReset xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="表示ウィンドウを閉じる"/>
+        </rtc:OnReset>
+        <rtc:OnExecute xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="特徴点検出を行う"/>
+        </rtc:OnExecute>
+        <rtc:OnStateUpdate xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnRateChanged xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnAction xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnModeChanged xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+    </rtc:Actions>
+    <rtc:ConfigurationSet>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="img_view" rtc:unit="" rtc:defaultValue="OFF" rtc:type="string" rtc:name="01_ImageView">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:Or>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>ON</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>OFF</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                    </rtc:Or>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="画像表示の選択" rtcDoc:defaultValue="OFF" rtcDoc:dataname="string"/>
+            <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="feature_method" rtc:unit="" rtc:defaultValue="FAST" rtc:type="string" rtc:name="02_Method">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:Or>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>FAST</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>Good</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>GoodHarris</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>Star</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>SIFT</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>SURF</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>MSER</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                    </rtc:Or>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="FAST - FAST()メソッドを用いた特徴検出&lt;br/&gt;Good - GoodFeaturesToTrack()クラスを用いた特徴検出&lt;br/&gt;GoodHarris - GoodFeaturesToTrack()クラスにおいて、HarrisDetectorにtrueを与えた特徴検出&lt;br/&gt;Star - StarDetector()クラスを用いた特徴検出&lt;br/&gt;SIFT - SIFT()クラスを用いた特徴検出&lt;br/&gt;SURF - SURF()クラスを用いた特徴検出&lt;br/&gt;MSER - MSER()クラスを用いた特徴検出" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="特徴検出のメソッドを選択するための変数" rtcDoc:defaultValue="FAST" rtcDoc:dataname="string"/>
+            <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="adapt" rtc:unit="" rtc:defaultValue="NON" rtc:type="string" rtc:name="03_Adapter">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:Or>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>NON</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>Grid</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>Pyramid</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>Dynamic</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                    </rtc:Or>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="NON - アダプタを使用せず検出&lt;br/&gt;Grid -入力画像をグリッド状に分割して各セルでポイント検出&lt;br/&gt;Pyramid -ガウシアンピラミッドの複数レベルから検出&lt;br/&gt;Dynamic -指定した固定数の特徴が見つかるまで繰り返し検出" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="特徴検出のアダプタを選択するための変数" rtcDoc:defaultValue="NON" rtcDoc:dataname="string"/>
+            <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="fast_threshold" rtc:unit="" rtc:defaultValue="1" rtc:type="int" rtc:name="04_FAST-threshold">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="FAS()のパラメータ" rtcDoc:defaultValue="1" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="good_max" rtc:unit="" rtc:defaultValue="1000" rtc:type="int" rtc:name="05_Good-maxCorners">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="GoodFeatureToTrack()のパラメータ" rtcDoc:defaultValue="1000" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="good_level" rtc:unit="" rtc:defaultValue="0.01" rtc:type="double" rtc:name="06_Good-qualityLevel">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="GoodFeatureToTrack()のパラメータ" rtcDoc:defaultValue="0.01" rtcDoc:dataname="double"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="good_min" rtc:unit="" rtc:defaultValue="1" rtc:type="double" rtc:name="07_Good-minDistance">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="GoodFeatureToTrack()のパラメータ" rtcDoc:defaultValue="1" rtcDoc:dataname="double"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="good_block" rtc:unit="" rtc:defaultValue="3" rtc:type="int" rtc:name="08_Good-blockSize">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="GoodFeatureToTrack()のパラメータ" rtcDoc:defaultValue="3" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="good_k" rtc:unit="" rtc:defaultValue="0,04" rtc:type="double" rtc:name="09_Good-k">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="GoodFeatureToTrack()のパラメータ" rtcDoc:defaultValue="0.04" rtcDoc:dataname="double"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="star_max" rtc:unit="" rtc:defaultValue="16" rtc:type="int" rtc:name="10_Star-maxSize">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="StarDetector()のパラメータ" rtcDoc:defaultValue="16" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="star_response" rtc:unit="" rtc:defaultValue="30" rtc:type="int" rtc:name="11_Star-responseThreshold">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="StarDetector()のパラメータ" rtcDoc:defaultValue="30" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="star_projected" rtc:unit="" rtc:defaultValue="10" rtc:type="int" rtc:name="12_Star-lineThresholdProjected">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="StarDetector()のパラメータ" rtcDoc:defaultValue="10" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="star_binarized" rtc:unit="" rtc:defaultValue="8" rtc:type="int" rtc:name="13_Star-lineThresholdBinarized">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="StarDetector()のパラメータ" rtcDoc:defaultValue="8" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="star_nonmax" rtc:unit="" rtc:defaultValue="5" rtc:type="int" rtc:name="14_Star-suppressNonmaxSize">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="StarDetector()のパラメータ" rtcDoc:defaultValue="5" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="sift_threshold" rtc:unit="" rtc:defaultValue="0.05" rtc:type="double" rtc:name="15_SIFT-threshold">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="SIFT()のパラメータ" rtcDoc:defaultValue="0.05" rtcDoc:dataname="double"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="sift_edge" rtc:unit="" rtc:defaultValue="10.0" rtc:type="double" rtc:name="16_SIFT-edgeThreshold">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="SIFT()のパラメータ" rtcDoc:defaultValue="10.0" rtcDoc:dataname="double"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="surf_threshold" rtc:unit="" rtc:defaultValue="400.0" rtc:type="double" rtc:name="17_SURF-hessianThreshold">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="SURF()のパラメータ" rtcDoc:defaultValue="400.0" rtcDoc:dataname="double"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="grid_max" rtc:unit="" rtc:defaultValue="200" rtc:type="int" rtc:name="18_Grid-maxTotalKeypoints">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="画像から検出されるキーポイントの最大数&lt;br/&gt;強いキーポイントのみが保存される" rtcDoc:defaultValue="200" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="grid_rows" rtc:unit="" rtc:defaultValue="10" rtc:type="int" rtc:name="19_Grid-gridRows">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="グリッドの行数" rtcDoc:defaultValue="10" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="grid_cols" rtc:unit="" rtc:defaultValue="10" rtc:type="int" rtc:name="20_Grid-gridCols">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="グリッドの列数" rtcDoc:defaultValue="10" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="pyramid_levels" rtc:unit="" rtc:defaultValue="3" rtc:type="int" rtc:name="21_Pyramid-levels">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="スケーリングレベル" rtcDoc:defaultValue="3" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="dynamic_min" rtc:unit="" rtc:defaultValue="400" rtc:type="int" rtc:name="22_Dynamic_minFeatures">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="出力キーポイント個数の最少数" rtcDoc:defaultValue="400" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="dynamic_max" rtc:unit="" rtc:defaultValue="500" rtc:type="int" rtc:name="23_Dynamic_maxFeatures">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="出力キーポイント個数の最大数" rtcDoc:defaultValue="500" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="dynamic_iters" rtc:unit="" rtc:defaultValue="10" rtc:type="int" rtc:name="24_Dynamic_maxIters">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="条件通り見つかるまでの特徴検出最大繰り返し回数" rtcDoc:defaultValue="10" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+    </rtc:ConfigurationSet>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="LEFT" rtcExt:variableName="src_img" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::CameraImage" rtc:name="srcImage" rtc:portType="DataInPort">
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="この画像に対して特徴点検出を行う" rtcDoc:number="1" rtcDoc:type="CameraImage" rtcDoc:description="特徴点検出を行う画像を受け取るポート"/>
+    </rtc:DataPorts>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="RIGHT" rtcExt:variableName="feature_points" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::TimedFloatSeq" rtc:name="featurePoints" rtc:portType="DataOutPort">
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="KeyPoint型のデータを、各要素ごとに分解して配列化して送信する&lt;br/&gt;KeyPoint&lt;br/&gt;- float angle [0]&lt;br/&gt;- int class_id [1]&lt;br/&gt;- int octave [2]&lt;br/&gt;- Point pt (pt.x [3] pt.y [4])&lt;br/&gt;- float response [5]&lt;br/&gt;- float size [6]&lt;br/&gt;KeyPointの7個データをそれぞれ配列の一要素として用いる" rtcDoc:number="特徴点の数*7" rtcDoc:type="TimedFloatSeq" rtcDoc:description="特徴検出の出力結果であるキーポイントを配列化したもの"/>
+    </rtc:DataPorts>
+    <rtc:Language xsi:type="rtcExt:language_ext" rtc:kind="C++"/>
+</rtc:RtcProfile>

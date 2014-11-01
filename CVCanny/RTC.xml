@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):Image Processing:CVCanny:1.1.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="CVCanny" rtc:updateDate="2014-10-30T11:33:03+09:00" rtc:creationDate="2014-10-30T11:33:03+09:00" rtc:abstract="与えられた画像に対し、コンフィギュで指定されたパラメータを用いてエッジ検出を行う" rtc:version="1.1.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="与えられた画像にエッジ検出を行う" rtc:category="Image Processing" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="CVCanny">
+        <rtcDoc:Doc rtcDoc:reference="" rtcDoc:license="" rtcDoc:creator="立川将(Tatekawa Masaru)&lt;br/&gt;Email:y09148@shibaura-it.ac.jp" rtcDoc:algorithm="入力やコンフィギュの値を常に確認し、どこか一つでも変更があるとエッジ再検出を行う&lt;br/&gt;出力ポートに送信されるタイミングは、検出後一度きり" rtcDoc:inout="入力&lt;br/&gt;srcImage[CameraImage] - エッジ検出の対象画像&lt;br/&gt;&lt;br/&gt;出力&lt;br/&gt;cannyImage[CameraImage] - 入力画像から抽出したエッジ画像" rtcDoc:description="入力された画像に対して、コンフィギュレーションパラメータで与えられた値を用いてエッジ検出を行う"/>
+        <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
+    </rtc:BasicInfo>
+    <rtc:Actions>
+        <rtc:OnInitialize xsi:type="rtcDoc:action_status_doc" rtc:implemented="true"/>
+        <rtc:OnFinalize xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnStartup xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnShutdown xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnActivated xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="初期化を行う"/>
+        </rtc:OnActivated>
+        <rtc:OnDeactivated xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="表示ウィンドウを閉じる"/>
+        </rtc:OnDeactivated>
+        <rtc:OnAborting xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnError xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnReset xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="表示ウィンドウを閉じる"/>
+        </rtc:OnReset>
+        <rtc:OnExecute xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="エッジ検出を行う"/>
+        </rtc:OnExecute>
+        <rtc:OnStateUpdate xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnRateChanged xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnAction xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnModeChanged xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+    </rtc:Actions>
+    <rtc:ConfigurationSet>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="img_view" rtc:unit="" rtc:defaultValue="OFF" rtc:type="string" rtc:name="01_ImageView">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:Or>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>ON</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>OFF</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                    </rtc:Or>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="画像表示を選択するための変数" rtcDoc:defaultValue="OFF" rtcDoc:dataname="string"/>
+            <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="thre1" rtc:unit="" rtc:defaultValue="50" rtc:type="double" rtc:name="02_threshold1">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="ヒステリシスが存在する処理の一番目の閾値" rtcDoc:defaultValue="50" rtcDoc:dataname="double"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="thre2" rtc:unit="" rtc:defaultValue="200" rtc:type="double" rtc:name="03_threshold2">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="ヒステリシスが存在する処理の二番目の閾値" rtcDoc:defaultValue="200" rtcDoc:dataname="double"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="size" rtc:unit="" rtc:defaultValue="3" rtc:type="int" rtc:name="04_apertureSize">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:propertyIsGreaterThan rtc:matchCase="false">
+                        <rtc:Literal>0</rtc:Literal>
+                    </rtc:propertyIsGreaterThan>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;0" rtcDoc:unit="" rtcDoc:description="オペレータのアパーチャサイズ" rtcDoc:defaultValue="3" rtcDoc:dataname="int"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="gradient" rtc:unit="" rtc:defaultValue="false" rtc:type="string" rtc:name="05_L2gradient">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:Or>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>true</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>false</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                    </rtc:Or>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="画像勾配の強度を求めるために，より精度の高いL_2ノルムを利用するか，L_1ノルムで十分（L2gridient=false）かを指定します．" rtcDoc:defaultValue="false" rtcDoc:dataname="string"/>
+            <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+    </rtc:ConfigurationSet>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="LEFT" rtcExt:variableName="src_img" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::CameraImage" rtc:name="srcImage" rtc:portType="DataInPort">
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="この画像に対してエッジ検出を行う" rtcDoc:number="1" rtcDoc:type="CameraImage" rtcDoc:description="エッジ検出を行う対象の画像データ"/>
+    </rtc:DataPorts>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="RIGHT" rtcExt:variableName="canny_img" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::CameraImage" rtc:name="cannyImage" rtc:portType="DataOutPort">
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="入力画像に対してコンフィギュの値を用いてエッジ検出を行った結果画像" rtcDoc:number="1" rtcDoc:type="CameraImage" rtcDoc:description="入力画像からエッジを抽出した画像データ"/>
+    </rtc:DataPorts>
+    <rtc:Language xsi:type="rtcExt:language_ext" rtc:kind="C++"/>
+</rtc:RtcProfile>

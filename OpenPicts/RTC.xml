@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):UI:OpenPicts:1.1.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="OpenPicts" rtc:updateDate="2014-10-30T16:43:57.799+09:00" rtc:creationDate="2014-10-30T16:23:04+09:00" rtc:version="1.1.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="与えられたファイル名から複数画像の読み込みと送信を行う" rtc:category="UI" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="OpenPicts">
+        <rtcDoc:Doc rtcDoc:reference="" rtcDoc:license="" rtcDoc:creator="立川将(Tatekawa Masaru)&lt;br/&gt;Email:y09148@shibaura-it.ac.jp" rtcDoc:algorithm="ポートとコンフィグの変更を常に監視し、変更があった場合、画像の再読み込みを行う。&lt;br/&gt;送信はフィードバッグがなければ最初の読み込み画像を連続で送信、フィードバッグがある場合は、送信が完了したらoutを終了して、入力変更の監視のみを行う。&lt;br/&gt;それぞれの入出力のデータ送信ポリシーは、フィードバック処理を模した構造であるため、Newを選択することを推奨。" rtcDoc:inout="入力&lt;br/&gt;FileName[TimeString] - 読み込む画像データのファイル名&lt;br/&gt;backCameraImage[CameraImage] - 送り先からのフィードバック&lt;br/&gt;&lt;br/&gt;出力&lt;br/&gt;sendCameraImage[CameraImage] - 読み込んだ画像&lt;br/&gt;sendFlagData[TimedShort] - 送信終了・送信のやり直しなどの送信状態" rtcDoc:description="コンフィギュレーションパラメータのFileNameで指定された、又は入力ポートより受け取った画像ファイルを読み込み、CameraImage型に変換しOutPortから送るコンポーネント&lt;br/&gt;送り先のコンポーネントと相互通信を模したポート間のやり取りを用いることで複数枚の画像をCameraImage型で送ることができる"/>
+        <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
+    </rtc:BasicInfo>
+    <rtc:Actions>
+        <rtc:OnInitialize xsi:type="rtcDoc:action_status_doc" rtc:implemented="true"/>
+        <rtc:OnFinalize xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnStartup xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnShutdown xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnActivated xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="初期化を行う"/>
+        </rtc:OnActivated>
+        <rtc:OnDeactivated xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="表示ウィンドウを閉じる"/>
+        </rtc:OnDeactivated>
+        <rtc:OnAborting xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnError xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnReset xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="表示ウィンドウを閉じる"/>
+        </rtc:OnReset>
+        <rtc:OnExecute xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="画像の読み込みを行う"/>
+        </rtc:OnExecute>
+        <rtc:OnStateUpdate xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnRateChanged xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnAction xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnModeChanged xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+    </rtc:Actions>
+    <rtc:ConfigurationSet>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="img_view" rtc:unit="" rtc:defaultValue="OFF" rtc:type="string" rtc:name="01_ImageView">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:Or>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>ON</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>OFF</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                    </rtc:Or>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="画像表示を選択するための変数" rtcDoc:defaultValue="OFF" rtcDoc:dataname="string"/>
+            <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="FileName" rtc:unit="" rtc:defaultValue="*.jpg" rtc:type="string" rtc:name="02_FileName">
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="読み込みたいファイルのアドレス&lt;br/&gt;&quot;,&quot;で区切ることで複数取得可能" rtcDoc:defaultValue="*.jpg" rtcDoc:dataname="string"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+    </rtc:ConfigurationSet>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="LEFT" rtcExt:variableName="file_name" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::TimedString" rtc:name="FileName" rtc:portType="DataInPort">
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="読み込みたい画像のファイル名&lt;br/&gt;&quot;,&quot;で区切ることで複数取得可能" rtcDoc:number="1" rtcDoc:type="TimedString" rtcDoc:description="読み込み画像データのファイル名"/>
+    </rtc:DataPorts>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="LEFT" rtcExt:variableName="rec_cam_img" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::CameraImage" rtc:name="backCameraImage" rtc:portType="DataInPort">
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="本コンポーネントから送信されているCameraImageとこのポートで受け取ったCameraImageが合致した場合、次の画像を送る処理への進む" rtcDoc:number="1" rtcDoc:type="CameraImage" rtcDoc:description="送り先が現在受け取っている画像が何かを知るためのポート"/>
+    </rtc:DataPorts>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="RIGHT" rtcExt:variableName="send_cam_img" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::CameraImage" rtc:name="sendCameraImage" rtc:portType="DataOutPort">
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="ファイル名から読み込んだ画像データ&lt;br/&gt;データ送信ポリシー：New推奨" rtcDoc:number="1" rtcDoc:type="CameraImage" rtcDoc:description="画像データを送るポート"/>
+    </rtc:DataPorts>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="RIGHT" rtcExt:variableName="send_flag" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::TimedShort" rtc:name="sendFlagData" rtc:portType="DataOutPort">
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="フラグ処理の説明&lt;br/&gt;-2:こちらのファイル基データが書き換わったことを示すフラグ(要初期化&lt;br/&gt;-1:すべての画像を送信したことを示すフラグ" rtcDoc:number="1" rtcDoc:type="TimedShort" rtcDoc:description="送り先へ現在の送信状態を教えるためのポート"/>
+    </rtc:DataPorts>
+    <rtc:Language xsi:type="rtcExt:language_ext" rtc:kind="C++"/>
+</rtc:RtcProfile>

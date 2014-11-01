@@ -1,0 +1,54 @@
+# CVInpaint CMake config file
+#
+# This file sets the following variables:
+# CVInpaint_FOUND - Always TRUE.
+# CVInpaint_INCLUDE_DIRS - Directories containing the CVInpaint include files.
+# CVInpaint_IDL_DIRS - Directories containing the CVInpaint IDL files.
+# CVInpaint_LIBRARIES - Libraries needed to use CVInpaint.
+# CVInpaint_DEFINITIONS - Compiler flags for CVInpaint.
+# CVInpaint_VERSION - The version of CVInpaint found.
+# CVInpaint_VERSION_MAJOR - The major version of CVInpaint found.
+# CVInpaint_VERSION_MINOR - The minor version of CVInpaint found.
+# CVInpaint_VERSION_REVISION - The revision version of CVInpaint found.
+# CVInpaint_VERSION_CANDIDATE - The candidate version of CVInpaint found.
+
+message(STATUS "Found CVInpaint-@PROJECT_VERSION@")
+set(CVInpaint_FOUND TRUE)
+
+find_package(<dependency> REQUIRED)
+
+#set(CVInpaint_INCLUDE_DIRS
+#    "@CMAKE_INSTALL_PREFIX@/include/@PROJECT_NAME_LOWER@-@PROJECT_VERSION_MAJOR@"
+#    ${<dependency>_INCLUDE_DIRS}
+#    )
+#
+#set(CVInpaint_IDL_DIRS
+#    "@CMAKE_INSTALL_PREFIX@/include/@PROJECT_NAME_LOWER@-@PROJECT_VERSION_MAJOR@/idl")
+set(CVInpaint_INCLUDE_DIRS
+    "@CMAKE_INSTALL_PREFIX@/include/@CPACK_PACKAGE_FILE_NAME@"
+    ${<dependency>_INCLUDE_DIRS}
+    )
+set(CVInpaint_IDL_DIRS
+    "@CMAKE_INSTALL_PREFIX@/include/@CPACK_PACKAGE_FILE_NAME@/idl")
+
+
+if(WIN32)
+    set(CVInpaint_LIBRARIES
+        "@CMAKE_INSTALL_PREFIX@/@LIB_INSTALL_DIR@/@CMAKE_SHARED_LIBRARY_PREFIX@@PROJECT_NAME_LOWER@@CMAKE_STATIC_LIBRARY_SUFFIX@"
+        ${<dependency>_LIBRARIES}
+        )
+else(WIN32)
+    set(CVInpaint_LIBRARIES
+        "@CMAKE_INSTALL_PREFIX@/@LIB_INSTALL_DIR@/@CMAKE_SHARED_LIBRARY_PREFIX@@PROJECT_NAME_LOWER@@CMAKE_SHARED_LIBRARY_SUFFIX@"
+        ${<dependency>_LIBRARIES}
+        )
+endif(WIN32)
+
+set(CVInpaint_DEFINITIONS ${<dependency>_DEFINITIONS})
+
+set(CVInpaint_VERSION @PROJECT_VERSION@)
+set(CVInpaint_VERSION_MAJOR @PROJECT_VERSION_MAJOR@)
+set(CVInpaint_VERSION_MINOR @PROJECT_VERSION_MINOR@)
+set(CVInpaint_VERSION_REVISION @PROJECT_VERSION_REVISION@)
+set(CVInpaint_VERSION_CANDIDATE @PROJECT_VERSION_CANDIDATE@)
+
