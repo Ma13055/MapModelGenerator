@@ -1,0 +1,139 @@
+convToLineMap - 日本語
+=======================
+
+
+はじめに
+========
+
+クラスについては、 `APIドキュメンテーション`_ に参照してください。
+
+.. _`APIドキュメンテーション`:
+   doxygen/html/index.html
+
+条件
+====
+
+convToLineMapはOpenRTM-aist 1.0.0以上のC++版が必要です。
+
+convToLineMapは CMake_ を使います。CMake 2.8以上が必要です。
+
+.. _CMAke:
+   http://www.cmake.org
+
+インストール
+============
+
+インストーラ
+------------
+
+Windowsのユーザはインストーラパッケージを使用してコンポーネントをインストール
+することができます。これはコンポーネント及びそのすべての必要なライブラリを
+インストールします。Windowsでインストールする場合、インストーラの使用を推奨してます。
+
+- インストーラをダウンロードしてください。
+- インストールを始めるためにインストーラをダブルクリックしてください。
+- 指示にしたがってコンポーネントをインストールしてください。
+- 環境変数の変更を適用するため、コンポーネントを使用する前にコンピューターを
+  再起動する必要があるかもしれません。
+
+convToLineMapは ``convToLineMapComp`` の実行をダブルクリックして実行することが
+できます。あるいは、 ``convToLineMap`` を初期化関数の ``convToLineMapInit`` を利用して、
+マネージャにロードすることができます。
+
+ソースから
+----------
+
+ソースを使う場合は以下の手順でインストールしてください。
+
+- ソースをダウンロードして解凍してください::
+
+    tar -xvzf convToLineMap-1.0.0.tar.gz
+
+- 解凍されたフォルダに入ってください::
+
+    cd convToLineMap-1.0.0
+
+- ``build`` フォルダを作ってください::
+
+    mkdir build
+
+- `` build`` フォルダに入ってください::
+
+    cd build
+
+- CMakeを実行してください::
+
+    cmake ../
+
+- エラーが出無い場合、makeを実行してください::
+
+    make
+
+- ``make install`` でコンポーネントをインストールしてください。選択された
+  インストール場所に書き込み権限があるかを確認してください::
+
+  ``make install``
+
+- インストールする場所はccmakeを実行して ``CMAKE_INSTALL_PREFIX`` を
+  設定することで変更が可能です。
+
+    ccmake ../
+
+ここまでで、コンポーネントが使えるようになりました。コンフィグレーションは次のセクションを
+参照してください。
+
+convToLineMapは ``convToLineMapComp`` を実行（ ``${prefix}/components/bin`` に
+インストールされます）することでスタンドアローンモードで実行することができます。
+あるいは、 ``libconvToLineMap.so`` を初期化関数の ``convToLineMapInit`` を利用して、
+マネージャにロードすることができます。このライブラリは ``${prefix}/components/lib`` 
+または ``${prefix}/components/lib64`` にインストールされます。
+
+
+コンフィグレーション
+====================
+
+使えるコンフィグレーションパラメータは以下のテーブルを参照
+してください。
+
+================ ================== ================ ====
+パラメータ       データ型           デフォルト値     意味
+================ ================== ================ ====
+modifyType       string             erase            輪郭データ群に対するユーザからの操作の種類を選択する
+================ ================== ================ ====
+
+ポート
+======
+
+コンポーネントによって提供されるポートは以下のテーブルで述べられています。
+
+=============== =========== ============================== ====
+ポート名        ポート型    データ型                       意味
+=============== =========== ============================== ====
+tempFolderPath  InPort      RTC::TimedString               一時作業領域のパスを受け取るためのポート
+srcImage        InPort      RTC::CameraImage               修復処理を行う画像データを受け取るポート
+contoursConvex  InPort      RTC::TimedShortSeq             配列化されたconvexとして用いるvector<Point>のデータを受信するためのポート
+featurePoints   InPort      RTC::TimedFloatSeq             特徴検出の出力結果であるキーポイントを配列化したものを受け取るポート
+clickPoint      InPort      RTC::TimedPoint3D              UIでクリックされた座標を受け取るポート
+draggedRect     InPort      RTC::TimedShortSeq             UIでドラッグされた長方形を受け取るポート
+modifyImage     OutPort     RTC::CameraImage               ユーザの修正処理のためにUI上で表示する画像を送るポート
+modifyImagePath OutPort     RTC::TimedString                ユーザの修正処理のためにUI上で表示する画像のパスを送るポート
+compLineMap     OutPort     RTC::TimedShortSeq             処理の結果完成したラインマップの情報を送るためのポート
+=============== =========== ============================== ====
+
+例
+==
+
+例のrtc.confファイルは ``${prefix}/components/share/convToLineMap/examples/conf/``
+フォルダにインストールされています。
+
+Changelog
+=========
+
+
+License
+=======
+
+このソフトウェアは産業技術総合研究所で開発されています。承認番号はH23PRO-????
+です。このソフトウェアは Lesser General Public License (LGPL) ライセンスとして
+公開されてます。COPYING.LESSER を参照してください。
+

@@ -1,0 +1,54 @@
+# CVImgThreshold CMake config file
+#
+# This file sets the following variables:
+# CVImgThreshold_FOUND - Always TRUE.
+# CVImgThreshold_INCLUDE_DIRS - Directories containing the CVImgThreshold include files.
+# CVImgThreshold_IDL_DIRS - Directories containing the CVImgThreshold IDL files.
+# CVImgThreshold_LIBRARIES - Libraries needed to use CVImgThreshold.
+# CVImgThreshold_DEFINITIONS - Compiler flags for CVImgThreshold.
+# CVImgThreshold_VERSION - The version of CVImgThreshold found.
+# CVImgThreshold_VERSION_MAJOR - The major version of CVImgThreshold found.
+# CVImgThreshold_VERSION_MINOR - The minor version of CVImgThreshold found.
+# CVImgThreshold_VERSION_REVISION - The revision version of CVImgThreshold found.
+# CVImgThreshold_VERSION_CANDIDATE - The candidate version of CVImgThreshold found.
+
+message(STATUS "Found CVImgThreshold-@PROJECT_VERSION@")
+set(CVImgThreshold_FOUND TRUE)
+
+find_package(<dependency> REQUIRED)
+
+#set(CVImgThreshold_INCLUDE_DIRS
+#    "@CMAKE_INSTALL_PREFIX@/include/@PROJECT_NAME_LOWER@-@PROJECT_VERSION_MAJOR@"
+#    ${<dependency>_INCLUDE_DIRS}
+#    )
+#
+#set(CVImgThreshold_IDL_DIRS
+#    "@CMAKE_INSTALL_PREFIX@/include/@PROJECT_NAME_LOWER@-@PROJECT_VERSION_MAJOR@/idl")
+set(CVImgThreshold_INCLUDE_DIRS
+    "@CMAKE_INSTALL_PREFIX@/include/@CPACK_PACKAGE_FILE_NAME@"
+    ${<dependency>_INCLUDE_DIRS}
+    )
+set(CVImgThreshold_IDL_DIRS
+    "@CMAKE_INSTALL_PREFIX@/include/@CPACK_PACKAGE_FILE_NAME@/idl")
+
+
+if(WIN32)
+    set(CVImgThreshold_LIBRARIES
+        "@CMAKE_INSTALL_PREFIX@/@LIB_INSTALL_DIR@/@CMAKE_SHARED_LIBRARY_PREFIX@@PROJECT_NAME_LOWER@@CMAKE_STATIC_LIBRARY_SUFFIX@"
+        ${<dependency>_LIBRARIES}
+        )
+else(WIN32)
+    set(CVImgThreshold_LIBRARIES
+        "@CMAKE_INSTALL_PREFIX@/@LIB_INSTALL_DIR@/@CMAKE_SHARED_LIBRARY_PREFIX@@PROJECT_NAME_LOWER@@CMAKE_SHARED_LIBRARY_SUFFIX@"
+        ${<dependency>_LIBRARIES}
+        )
+endif(WIN32)
+
+set(CVImgThreshold_DEFINITIONS ${<dependency>_DEFINITIONS})
+
+set(CVImgThreshold_VERSION @PROJECT_VERSION@)
+set(CVImgThreshold_VERSION_MAJOR @PROJECT_VERSION_MAJOR@)
+set(CVImgThreshold_VERSION_MINOR @PROJECT_VERSION_MINOR@)
+set(CVImgThreshold_VERSION_REVISION @PROJECT_VERSION_REVISION@)
+set(CVImgThreshold_VERSION_CANDIDATE @PROJECT_VERSION_CANDIDATE@)
+

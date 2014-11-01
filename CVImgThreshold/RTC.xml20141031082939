@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):Image Processing:CVImgThreshold:1.1.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="CVImgThreshold" rtc:updateDate="2014-10-30T15:23:55.819+09:00" rtc:creationDate="2014-10-30T15:14:06+09:00" rtc:version="1.1.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="与えられた画像に二値化処理を行う" rtc:category="Image Processing" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="CVImgThreshold"/>
+    <rtc:Actions>
+        <rtc:OnInitialize xsi:type="rtcDoc:action_status_doc" rtc:implemented="true"/>
+        <rtc:OnFinalize xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnStartup xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnShutdown xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnActivated xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="初期化を行う"/>
+        </rtc:OnActivated>
+        <rtc:OnDeactivated xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="表示ウィンドウを閉じる"/>
+        </rtc:OnDeactivated>
+        <rtc:OnAborting xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnError xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnReset xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="表示ウィンドウを閉じる"/>
+        </rtc:OnReset>
+        <rtc:OnExecute xsi:type="rtcDoc:action_status_doc" rtc:implemented="true">
+            <rtcDoc:Doc rtcDoc:postCondition="" rtcDoc:preCondition="" rtcDoc:description="二値化処理を行う"/>
+        </rtc:OnExecute>
+        <rtc:OnStateUpdate xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnRateChanged xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnAction xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+        <rtc:OnModeChanged xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
+    </rtc:Actions>
+    <rtc:ConfigurationSet>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="img_view" rtc:unit="" rtc:defaultValue="OFF" rtc:type="string" rtc:name="01_ImageView">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:Or>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>ON</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>OFF</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                    </rtc:Or>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="画像表示を選択するための変数" rtcDoc:defaultValue="OFF" rtcDoc:dataname="string"/>
+            <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="thre_algo" rtc:unit="" rtc:defaultValue="NON" rtc:type="vector&lt;string&gt;" rtc:name="02_Algorithm">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:Or>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>NON</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>Binary</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>BinaryInv</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>Trunc</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>ToZero</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>ToZeroInv</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>Adaptive_MEAN_CCV</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>Adaptive_GAUSSIAN_C</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                    </rtc:Or>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="二値化処理アルゴリズムを指定するための変数&lt;br/&gt;(同じ画像に対して複数回使用する場合に対応)" rtcDoc:defaultValue="NON" rtcDoc:dataname="vector&lt;string&gt;"/>
+            <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="thre_para" rtc:unit="" rtc:defaultValue="0,0,255,0,0,255,0,0,255" rtc:type="vector&lt;double&gt;" rtc:name="03_Parameter">
+            <rtcDoc:Doc rtcDoc:constraint="threAlgoがAdaptedThresholdではないとき、下記のthrePara[]が入力値となる&lt;br/&gt;cvThreshold( ----, ----, threPara[0], threPara[1], threAlgo)&lt;br/&gt;threPara[0]…double threshold – 閾値．:制約 0 &lt;= x &lt;= 255:デフォルト 0&lt;br/&gt;threPara[1]…double maxValue - threAlgoがBINARYとBINARY_INVの場合に利用される，最大値の値．:制約 0 &lt;= x &lt;= 255 :デフォルト 255&lt;br/&gt;threAlgoがAdaptedThresholdであるとき、下記のthrePara[]が入力値となる&lt;br/&gt;cvAdaptiveThreshold(----, ----, threPara[0], threAlgo,&lt;br/&gt;threPara[1], threPara[2], threPara[3])&lt;br/&gt;threPara[0]…double maxValue – CV_THRESH_BINARY とCV_THRESH_BINARY_INV の場合に利用される，最大値の値．:制約 0 &lt;= x &lt;= 255 :デフォルト 255&lt;br/&gt;threPara[1]…int threshold_type&lt;br/&gt;–閾値処理の種類．以下のうちの1つ 0か1で選択&lt;br/&gt;　CV_THRESH_BINARY - 0&lt;br/&gt;　CV_THRESH_BINARY_INV - 1　:制約 0 or 1 : デフォルト 0&lt;br/&gt;threPara[2]…int blockSize - ピクセルに対する閾値を計算するために利用する，そのピクセルの近傍領域のサイズ：3，5，7，など．:制約 1&lt;x かつ奇数:デフォルト 3&lt;br/&gt;threPara[3]…double param1 - 利用する手法に依存するパラメータ．:デフォルト 10&lt;br/&gt;&lt;br/&gt;threAlgoがAdaptedThresholdではないとき&lt;br/&gt;threPara[0]…0 &lt;= x &lt;= 255&lt;br/&gt;threPara[1]…0 &lt;= x &lt;= 255&lt;br/&gt;threPara[0]…0 &lt;= x &lt;= 255&lt;br/&gt;threPara[1]…制約 0 or 1&lt;br/&gt;threPara[2]…1&lt;x かつ 奇数&lt;br/&gt;threPara[3]…特になし" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="cvThreshold()及びcvAdaptiveThreshold()で用いる引数&lt;br/&gt;入力データが足りない、または制約条件から外れている場合はデフォルト値を用いて処理を行います" rtcDoc:defaultValue="0,0,255,0,0,255,0,0,255" rtcDoc:dataname="vector&lt;double&gt;"/>
+            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+    </rtc:ConfigurationSet>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="LEFT" rtcExt:variableName="rec_img" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::CameraImage" rtc:name="srcImage" rtc:portType="DataInPort">
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="このポートより受け取るCameraImageに対し、Mat型へ変換を行った後二値化処理を行う" rtcDoc:number="1" rtcDoc:type="CameraImage" rtcDoc:description="処理対象となる画像データを受け取るポート"/>
+    </rtc:DataPorts>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="RIGHT" rtcExt:variableName="thre_img" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::CameraImage" rtc:name="thresholdImg" rtc:portType="DataOutPort">
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="二値化後の画像データ" rtcDoc:number="1" rtcDoc:type="CameraImage" rtcDoc:description="二値化後の画像データを送るポート"/>
+    </rtc:DataPorts>
+</rtc:RtcProfile>

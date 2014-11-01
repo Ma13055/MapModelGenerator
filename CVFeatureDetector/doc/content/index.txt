@@ -1,0 +1,165 @@
+CVFeatureDetectorName - English
+========================
+
+.. toctree::
+   :hidden:
+
+   index_j
+
+
+Introduction
+============
+
+
+For a full list of classes and functions, see the `API documentation`_.
+
+.. _`API Documentation`:
+   doxygen/html/index.html
+
+Requirements
+============
+
+CVFeatureDetector uses the `CMake build system`. You will need at least version
+2.8 to be able to build the component.
+
+.. _`CMAke build system`:
+   http://www.cmake.org
+
+
+Installation
+============
+
+Binary
+------
+
+Users of Windows can install the component using the binary installer. This
+will install the component and all its necessary dependencies. It is the
+recommended method of installation in Windows.
+
+- Download the installer from the website.
+- Double-click the executable file to begin installation.
+- Follow the instructions to install the component.
+- You may need to restart your computer for environment variable changes
+  to take effect before using the component.
+
+The component can be launched by double-clicking the
+``CVFeatureDetectorComp`` executable. The ``CVFeatureDetector`` library
+is available for loading into a manager, using the initialisation function
+``CVFeatureDetectorInit``.
+
+From source
+-----------
+
+Follow these steps to install CVFeatureDetector from source in any operating
+system:
+
+- Download the source, either from the repository or a source archive,
+  and extract it somewhere::
+
+    tar -xvzf CVFeatureDetector-1.0.0.tar.gz
+
+- Change to the directory containing the extracted source::
+
+    cd CVFeatureDetector-1.0.0
+
+- Create a directory called ``build``::
+
+    mkdir build
+
+- Change to that directory::
+
+    cd build
+
+- Run cmake or cmake-gui::
+
+    cmake ../
+
+- If no errors occurred, run make::
+
+    make
+
+- Finally, install the component. Ensure the necessary permissions to
+  install into the chosen prefix are available::
+
+    make install
+
+- The install destination can be changed by executing ccmake and changing
+  the variable ``CMAKE_INSTALL_PREFIX``::
+
+    ccmake ../
+
+The component is now ready for use. See the next section for instructions on
+configuring the component.
+
+CVFeatureDetector can be launched in stand-alone mode by executing the
+``CVFeatureDetectorComp`` executable (installed into ``${prefix}/components/bin``).
+Alternatively, ``libCVFeatureDetector.so`` can be loaded into a manager, using the
+initialisation function ``CVFeatureDetectorInit``. This shared object can be found in
+``${prefix}/components/lib`` or ``${prefix}/components/lib64``.
+
+
+Configuration
+=============
+
+The available configuration parameters are described below:
+
+================ ================== ================ ======
+Parameter        Data type          Default Value    Effect
+================ ================== ================ ======
+01_ImageView     string             OFF              画像表示の選択
+02_Method        string             FAST             特徴検出のメソッドを選択するための変数
+03_Adapter       string             NON              特徴検出のアダプタを選択するための変数
+04_FAST-threshold int                1                FAS()のパラメータ
+05_Good-maxCorners int                1000             GoodFeatureToTrack()のパラメータ
+06_Good-qualityLevel double             0.01             GoodFeatureToTrack()のパラメータ
+07_Good-minDistance double             1                GoodFeatureToTrack()のパラメータ
+08_Good-blockSize int                3                GoodFeatureToTrack()のパラメータ
+09_Good-k        double             0,04             GoodFeatureToTrack()のパラメータ
+10_Star-maxSize  int                16               StarDetector()のパラメータ
+11_Star-responseThreshold int                30               StarDetector()のパラメータ
+12_Star-lineThresholdProjected int                10               StarDetector()のパラメータ
+13_Star-lineThresholdBinarized int                8                StarDetector()のパラメータ
+14_Star-suppressNonmaxSize int                5                StarDetector()のパラメータ
+15_SIFT-threshold double             0.05             SIFT()のパラメータ
+16_SIFT-edgeThreshold double             10.0             SIFT()のパラメータ
+17_SURF-hessianThreshold double             400.0            SURF()のパラメータ
+18_Grid-maxTotalKeypoints int                200              画像から検出されるキーポイントの最大数<br/>強いキーポイントのみが保存される
+19_Grid-gridRows int                10               グリッドの行数
+20_Grid-gridCols int                10               グリッドの列数
+21_Pyramid-levels int                3                スケーリングレベル
+22_Dynamic_minFeatures int                400              出力キーポイント個数の最少数
+23_Dynamic_maxFeatures int                500              出力キーポイント個数の最大数
+24_Dynamic_maxIters int                10               条件通り見つかるまでの特徴検出最大繰り返し回数
+================ ================== ================ ======
+
+Ports
+=====
+
+The ports provided by the component are described below:
+
+=============== =========== ============================== =======
+Name            Type        Data type                      Purpose
+=============== =========== ============================== =======
+srcImage        InPort      RTC::CameraImage               特徴点検出を行う画像を受け取るポート
+featurePoints   OutPort     RTC::TimedFloatSeq             特徴検出の出力結果であるキーポイントを配列化したもの
+=============== =========== ============================== =======
+
+Examples
+========
+
+An example configuration file is provided in the
+``${prefix}/components/share/CVFeatureDetector/examples/conf/`` directory.
+
+Changelog
+=========
+
+
+
+License
+=======
+
+This software is developed at the National Institute of Advanced
+Industrial Science and Technology. Approval number H23PRO-????. This
+software is licensed under the Lesser General Public License. See
+COPYING.LESSER.
+

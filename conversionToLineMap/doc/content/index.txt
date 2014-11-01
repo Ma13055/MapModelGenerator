@@ -1,0 +1,149 @@
+convToLineMapName - English
+========================
+
+.. toctree::
+   :hidden:
+
+   index_j
+
+
+Introduction
+============
+
+
+For a full list of classes and functions, see the `API documentation`_.
+
+.. _`API Documentation`:
+   doxygen/html/index.html
+
+Requirements
+============
+
+convToLineMap uses the `CMake build system`. You will need at least version
+2.8 to be able to build the component.
+
+.. _`CMAke build system`:
+   http://www.cmake.org
+
+
+Installation
+============
+
+Binary
+------
+
+Users of Windows can install the component using the binary installer. This
+will install the component and all its necessary dependencies. It is the
+recommended method of installation in Windows.
+
+- Download the installer from the website.
+- Double-click the executable file to begin installation.
+- Follow the instructions to install the component.
+- You may need to restart your computer for environment variable changes
+  to take effect before using the component.
+
+The component can be launched by double-clicking the
+``convToLineMapComp`` executable. The ``convToLineMap`` library
+is available for loading into a manager, using the initialisation function
+``convToLineMapInit``.
+
+From source
+-----------
+
+Follow these steps to install convToLineMap from source in any operating
+system:
+
+- Download the source, either from the repository or a source archive,
+  and extract it somewhere::
+
+    tar -xvzf convToLineMap-1.0.0.tar.gz
+
+- Change to the directory containing the extracted source::
+
+    cd convToLineMap-1.0.0
+
+- Create a directory called ``build``::
+
+    mkdir build
+
+- Change to that directory::
+
+    cd build
+
+- Run cmake or cmake-gui::
+
+    cmake ../
+
+- If no errors occurred, run make::
+
+    make
+
+- Finally, install the component. Ensure the necessary permissions to
+  install into the chosen prefix are available::
+
+    make install
+
+- The install destination can be changed by executing ccmake and changing
+  the variable ``CMAKE_INSTALL_PREFIX``::
+
+    ccmake ../
+
+The component is now ready for use. See the next section for instructions on
+configuring the component.
+
+convToLineMap can be launched in stand-alone mode by executing the
+``convToLineMapComp`` executable (installed into ``${prefix}/components/bin``).
+Alternatively, ``libconvToLineMap.so`` can be loaded into a manager, using the
+initialisation function ``convToLineMapInit``. This shared object can be found in
+``${prefix}/components/lib`` or ``${prefix}/components/lib64``.
+
+
+Configuration
+=============
+
+The available configuration parameters are described below:
+
+================ ================== ================ ======
+Parameter        Data type          Default Value    Effect
+================ ================== ================ ======
+modifyType       string             erase            輪郭データ群に対するユーザからの操作の種類を選択する
+================ ================== ================ ======
+
+Ports
+=====
+
+The ports provided by the component are described below:
+
+=============== =========== ============================== =======
+Name            Type        Data type                      Purpose
+=============== =========== ============================== =======
+tempFolderPath  InPort      RTC::TimedString               一時作業領域のパスを受け取るためのポート
+srcImage        InPort      RTC::CameraImage               修復処理を行う画像データを受け取るポート
+contoursConvex  InPort      RTC::TimedShortSeq             配列化されたconvexとして用いるvector<Point>のデータを受信するためのポート
+featurePoints   InPort      RTC::TimedFloatSeq             特徴検出の出力結果であるキーポイントを配列化したものを受け取るポート
+clickPoint      InPort      RTC::TimedPoint3D              UIでクリックされた座標を受け取るポート
+draggedRect     InPort      RTC::TimedShortSeq             UIでドラッグされた長方形を受け取るポート
+modifyImage     OutPort     RTC::CameraImage               ユーザの修正処理のためにUI上で表示する画像を送るポート
+modifyImagePath OutPort     RTC::TimedString                ユーザの修正処理のためにUI上で表示する画像のパスを送るポート
+compLineMap     OutPort     RTC::TimedShortSeq             処理の結果完成したラインマップの情報を送るためのポート
+=============== =========== ============================== =======
+
+Examples
+========
+
+An example configuration file is provided in the
+``${prefix}/components/share/convToLineMap/examples/conf/`` directory.
+
+Changelog
+=========
+
+
+
+License
+=======
+
+This software is developed at the National Institute of Advanced
+Industrial Science and Technology. Approval number H23PRO-????. This
+software is licensed under the Lesser General Public License. See
+COPYING.LESSER.
+
