@@ -106,7 +106,8 @@ The available configuration parameters are described below:
 ================ ================== ================ ======
 Parameter        Data type          Default Value    Effect
 ================ ================== ================ ======
-modifyType       string             erase            輪郭データ群に対するユーザからの操作の種類を選択する
+02_modifyType    string             erase            輪郭データ群に対するユーザからの操作の種類を選択する
+01_threshold     double             3                ラインマップの下地を作成する際の、特徴点を頂点座標として用いるかどうかを調べるための閾値
 ================ ================== ================ ======
 
 Ports
@@ -119,7 +120,7 @@ Name            Type        Data type                      Purpose
 =============== =========== ============================== =======
 tempFolderPath  InPort      RTC::TimedString               一時作業領域のパスを受け取るためのポート
 srcImage        InPort      RTC::CameraImage               修復処理を行う画像データを受け取るポート
-contoursConvex  InPort      RTC::TimedShortSeq             配列化されたconvexとして用いるvector<Point>のデータを受信するためのポート
+contoursData    InPort      RTC::TimedShortSeq             配列化されたcontoursとして用いるvector<vector<Point>>のデータを受信するためのポート
 featurePoints   InPort      RTC::TimedFloatSeq             特徴検出の出力結果であるキーポイントを配列化したものを受け取るポート
 clickPoint      InPort      RTC::TimedPoint3D              UIでクリックされた座標を受け取るポート
 draggedRect     InPort      RTC::TimedShortSeq             UIでドラッグされた長方形を受け取るポート

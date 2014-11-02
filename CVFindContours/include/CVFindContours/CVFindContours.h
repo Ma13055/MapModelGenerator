@@ -26,7 +26,6 @@
 #include "opencv2\highgui\highgui.hpp"
 #include "opencv2\imgproc\imgproc.hpp"
 
-
 // Service implementation headers
 // <rtc-template block="service_impl_h">
 
@@ -51,16 +50,16 @@ using namespace cv;
  * 入力
  * srcImage[CameraImage] -
  * 輪郭検出の結果を描画しその変換閾値などを確認するために用いる二値
- * 化前画像データ
+ * 化前のカラー画像データ
  * thresholdImage[CameraImage] - 輪郭検出の対象二値画像
  * 出力
+ * contoursData[TimedShortSeq] -
  * 輪郭検出の結果となるContoursを配列化したデータ
  * contoursRectangles [TimedShortSeq] -
- * 長方形化した輪郭データの配列化
- * contoursConvex [TimedShortSeq] -
- * 凸図形化した輪郭データの配列化
+ * 長方形化した輪郭データの配列
+ * contoursConvex [TimedShortSeq] - 凸図形化した輪郭データの配列
  *
- * 入力二値画像に対して輪郭検出を行い、結果を描画しつつTimedFloatS
+ * 入力二値画像に対して輪郭検出を行い、結果を描画しつつTimedShortS
  * eqに配列化して送る
  * 入力やコンフィギュの値を常に確認し、どこか一つでも変更があると輪
  * 郭の再検出を行う
@@ -265,6 +264,18 @@ class CVFindContours
    */
   std::string m_img_view;
   /*!
+   * 出力するデータタイプを選択する変数
+   * - Name: string send_type
+   * - DefaultValue: Rectangle,Convex
+   * - Constraint: NonExchange - 無変換の輪郭点データを出力する
+   *               Rectangle -
+   *               輪郭点データを基に長方形データを作成し出力する
+   *               Convex -
+   *               輪郭点データを基に凸図形データを作成し出力する
+   *               Convex -
+   */
+  std::string m_send_type;
+  /*!
    * 輪郭検出のモードを選択するための変数
    * - Name: string fc_mode
    * - DefaultValue: EXTERNAL
@@ -296,16 +307,16 @@ class CVFindContours
    *               Teh-Chinチェーン近似アルゴリズムの1つを適用する
    *               CV_LINK_RUNS -
    *               値が1のセグメントを水平方向に接続する，全く異な
-   *               る輪郭抽出アルゴリズム.ただし、CV_LINK_RUNSはCV
-   *               RETR_LISTが選択されていなければ使うことができな
-   *               いため、モードがLISTでない場合は、CODEを用いるよ
-   *               うに変更される
+   *               る輪郭抽出アルゴリズム.
+   *               ただし、CV_LINK_RUNSはCVRETR_LISTが選択されてい
+   *               なければ使うことができないため、モードがLISTでな
+   *               い場合は、CODEを用いるように変更される
    */
   std::string m_fc_method;
   /*!
    * オプションのオフセット
    * 各輪郭点はこの値の分だけシフトします
-   * - Name: Vector<int> offset
+   * - Name: vector<int> offset
    * - DefaultValue: 0,0
    */
   vector<int> m_offset;
@@ -316,7 +327,7 @@ class CVFindContours
   // <rtc-template block="inport_declare">
   RTC::CameraImage m_src_img;
   /*!
-   * 二値画像の元画像を受け取るポート
+   * 二値化前のカラー画像を受け取るポート
    * - Type: CameraImage
    * - Number: 1
    * - Semantics: この画像に対し輪郭検出の結果を書き込み、閾値など
@@ -326,7 +337,7 @@ class CVFindContours
   RTC::CameraImage m_thre_img;
   /*!
    * 輪郭検出を行う二値画像を受け取るポート
-   * - Type: Cameraimage
+   * - Type: CameraImage
    * - Number: 1
    * - Semantics: 輪郭検出を行いたいデータ
    *              ここの接続がない場合は、srcImageの画像を固定値で
@@ -339,30 +350,14 @@ class CVFindContours
 
   // DataOutPort declaration
   // <rtc-template block="outport_declare">
-  RTC::TimedShortSeq m_cont_rect;
+  RTC::TimedShortSeq m_cont_data;
   /*!
-   * 検出によって得た輪郭点群からなる長方形データを送るためのポート
+   * 検出によって得た輪郭点群
    * - Type: TimedShortSeq
-   * - Number: 長方形数*4
-   * - Semantics: Rectangleの要素を配列化して送信する
-   *              Rectangle r1の左上の点p1.x,p1.yとwidth,heightを
-   *              - r1.p1.x [0]
-   *              - r1.p1.y [1]
-   *              - r1.width [2]
-   *              - r1.height [3]
-   *              これら4つの要素を配列に格納して送る　すなわち[0]
-   *              ~[3]で一つの長方形となる
-   */
-  OutPort<RTC::TimedShortSeq> m_cont_rectOut;
-  RTC::TimedShortSeq m_cont_convex;
-  /*!
-   * 輪郭検出によって得た輪郭点群からなる凸図形のデータを送るための
-   * ポート
-   * - Type: TimedShortSeq
-   * - Number: 全図形数*(図形の持つ凸数*2 + 1)
-   * - Semantics: convexとして用いるvect<Point>のデータを配列化して
-   *              送信する　Point
-   *              p1,p2,p3,p4からなるVector<Point>　convex1に対し
+   * - Number: 検出輪郭群数*(1+輪郭点数*2)
+   * - Semantics: 検出結果のcontoursの要素を配列化して送信する
+   *              Point p1,p2,p3,p4からなるVector<Point>
+   *              convex1に対し
    *              - convex1.size() [0]
    *              - convex1.p1.x [1]
    *              - convex1.p1.y [2]
@@ -372,10 +367,53 @@ class CVFindContours
    *              - convex1.p3.y [6]
    *              - convex1.p4.x [7]
    *              - convex1.p4.y [8]
-   *              これら9つの要素を配列に格納して送る　すなわち[0]
-   *              ~[8]で一つの図形となる　受け取り側は、[0]にあたる
-   *              データ数分のPointが来ると認識し、そのPoint数分格
-   *              納したら次のvector処理へ進む
+   *              これら9つの要素を配列に格納して送る
+   *              すなわち[0]~[8]で一つの図形となる
+   *              受け取り側は[0]にあたるデータ数分のPointが来ると
+   *              認識し、
+   *              そのPoint数分格納したら次のvector処理へ進む
+   */
+  OutPort<RTC::TimedShortSeq> m_cont_dataOut;
+  RTC::TimedShortSeq m_cont_rect;
+  /*!
+   * 検出によって得られた輪郭点群からなる長方形データを送るためのポ
+   * ート
+   * - Type: TimedShortSeq
+   * - Number: 長方形数*4
+   * - Semantics: Rectangleの要素を配列化して送信する
+   *              Rectangle r1の左上の点p1.x,p1.yとwidth,heightを
+   *              - r1.p1.x [0]
+   *              - r1.p1.y [1]
+   *              - r1.width [2]
+   *              - r1.height [3]
+   *              これら4つの要素を配列に格納して送る
+   *              すなわち[0]~[3]で一つの長方形となる
+   */
+  OutPort<RTC::TimedShortSeq> m_cont_rectOut;
+  RTC::TimedShortSeq m_cont_convex;
+  /*!
+   * 輪郭検出によって得られた輪郭点群からなる凸図形のデータを送るた
+   * めのポート
+   * - Type: TimedShortSeq
+   * - Number: 全図形数*(1+図形の持つ凸数*2)
+   * - Semantics: convexとして用いるvect<Point>のデータを配列化して
+   *              送信する
+   *              Pointp1,p2,p3,p4からなるVector<Point>
+   *              convex1に対し
+   *              - convex1.size() [0]
+   *              - convex1.p1.x [1]
+   *              - convex1.p1.y [2]
+   *              - convex1.p2.x [3]
+   *              - convex1.p2.y [4]
+   *              - convex1.p3.x [5]
+   *              - convex1.p3.y [6]
+   *              - convex1.p4.x [7]
+   *              - convex1.p4.y [8]
+   *              これら9つの要素を配列に格納して送る
+   *              すなわち[0]~[8]で一つの図形となる
+   *              受け取り側は、[0]にあたるデータ数分のPointが来る
+   *              と認識し、
+   *              そのPoint数分格納したら次のvector処理へ進む
    */
   OutPort<RTC::TimedShortSeq> m_cont_convexOut;
   
@@ -403,6 +441,7 @@ class CVFindContours
 	//メソッド
 	string mode;
 	string method;
+	string checkbox;
 
 	//FindContoursの基礎パラメータ
 	Point offset;
@@ -414,8 +453,10 @@ class CVFindContours
 	Mat src_img;
 	Mat draw_img;
 	bool remake;	//再検出フラグ
+	vector<vector<Point> > contours;	//輪郭点群
 	vector<Rect> cont_rect;	//輪郭点を変換した長方形
 	vector<vector<Point> > cont_convex;	//輪郭点を変換した凸角形
+	bool checkbox_flag[3];	//チェックボックスのフラグ配列
 
   // </rtc-template>
 

@@ -48,8 +48,8 @@ using namespace std;
  * tempFolderPath[TimedString] -
  * 画像情報送信に用いる一時保存領域のパス
  * srcImage[CameraImage] - 修復処理を行いたい画像データ
- * contoursConvex[TimedShortSeq] -
- * 輪郭点群がベースとなっている輪郭凸図形データ群
+ * contoursData[TimedShortSeq] -
+ * 輪郭検出の結果となるContoursを配列化したデータ
  * clickPoint[TimedPoint3D] - UIコンポーネントとクリック情報
  * draggedRect[TimedShortSeq] -
  * ドラッグされて生成された長方形情報
@@ -60,8 +60,8 @@ using namespace std;
  * modifyImagePath[TimedString] - 画像の保存アドレスのパス
  * compLineMap[TimedShortSeq] - 変換が完了した地図のライン情報
  *
- * 輪郭点データ群より得られる凸図形に対し、UI上で修正を行うことでラ
- * インマップに変換する。
+ * 輪郭点データ群と特徴点データ群とを合わせることで凸図形を作成し、
+ * UI上で修正を行うことでラインマップに変換する。
  * ここでのラインマップは「地図の頂点を示す座標群と、その座標同士の
  * 関係性」を持つ点と線の情報群を指す
  *
@@ -268,6 +268,14 @@ class convToLineMap
    *               追加する頂点は特徴点の中から選択する
    */
   std::string m_modi_type;
+  /*!
+   * ラインマップの下地を作成する際の、特徴点を頂点座標として用いる
+   * かどうかを調べるための閾値
+   * - Name: double threshold
+   * - DefaultValue: 3
+   * - Range: x>=0
+   */
+  double m_threshold;
 
   // </rtc-template>
 
@@ -292,13 +300,13 @@ class convToLineMap
    *              る
    */
   InPort<RTC::CameraImage> m_src_imgIn;
-  RTC::TimedShortSeq m_cont_convex;
+  RTC::TimedShortSeq m_cont_data;
   /*!
-   * 配列化されたconvexとして用いるvector<Point>のデータを受信する
-   * ためのポート
+   * 配列化されたcontoursとして用いるvector<vector<Point>>のデータ
+   * を受信するためのポート
    * - Type: TimedShortSeq
-   * - Number: 全図形数*(1+図形の持つ凸数*2)
-   * - Semantics: この凸図形輪郭線がラインマップのベースとなる
+   * - Number: 検出輪郭群数*(1+輪郭点数*2)
+   * - Semantics: この輪郭群がラインマップのベースとなる
    *              Point p1,p2,p3,p4からなるVector<Point>
    *              convex1に対し
    *              - convex1.size() [0]
@@ -315,7 +323,7 @@ class convToLineMap
    *              [0]にあたるデータ数分のPointが来ると認識しそのPo
    *              int数分格納したら次のvector処理へ進む
    */
-  InPort<RTC::TimedShortSeq> m_cont_convexIn;
+  InPort<RTC::TimedShortSeq> m_cont_dataIn;
   RTC::TimedFloatSeq m_feature_points;
   /*!
    * 特徴検出の出力結果であるキーポイントを配列化したものを受け取る
@@ -425,23 +433,27 @@ class convToLineMap
 
  private:
   // <rtc-template block="private_attribute">
- 	string tempName;
-	TimedShortSeq old_cont_convex;
+   	string tempName;
+
+	TimedShortSeq old_cont_data;
 	TimedFloatSeq old_feature_points;
 
-	vector<vector<Point> > cont_convex;			//輪郭点を変換した凸図形
-	vector<vector<Point> > reset_cont_convex;	//リセット処理に用いるデータ
-	vector<vector<Point> > last_cont_convex;		//戻る処理に用いるデータ
+	vector<vector<Point> > cont_data;			//輪郭点データ
+	vector<vector<Point> > line_base;
+	vector<vector<Point> > reset_line_base;		//リセット処理に用いるデータ
+	vector<vector<Point> > last_line_base;		//戻る処理に用いるデータ
 
 //	vector<KeyPoint> keypoints;		//特徴点が入る変数
 	vector<Point> keypoints;		//特徴点が入る変数
 
 	CameraImage src_cam_img;
 	CameraImage old_img;
+
 	Mat gray_img;
 	Mat gray_color_img;
 	Mat src_img;
 	Mat pre_img;
+
 	bool remake;
 	bool first_flag;
 	bool contours_make_flag;
@@ -449,12 +461,13 @@ class convToLineMap
 	bool contours_click_erase_flag;
 
 	int click_step;
+
 	Point click_cont_point;
 	Point back_cont_point;
 	Point next_cont_point;
 	Point second_cont_point;
 	Point click_feature_point;
- 
+  
   // </rtc-template>
 
   // <rtc-template block="private_operation">

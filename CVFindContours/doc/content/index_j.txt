@@ -99,9 +99,10 @@ CVFindContoursは ``CVFindContoursComp`` を実行（ ``${prefix}/components/bin
 パラメータ       データ型           デフォルト値     意味
 ================ ================== ================ ====
 01_ImageView     string             OFF              画像表示を選択するための変数
-02_FindContourMode string             EXTERNAL         輪郭検出のモードを選択するための変数
-03_FindContourMethod string             NONE             輪郭検出のメソッドを選択するための変数
-04_offset        Vector<int>        0,0              オプションのオフセット<br/>各輪郭点はこの値の分だけシフトします
+02_sendDataType  string             Rectangle,Convex 出力するデータタイプを選択する変数
+03_FindContourMode string             EXTERNAL         輪郭検出のモードを選択するための変数
+04_FindContourMethod string             NONE             輪郭検出のメソッドを選択するための変数
+05_offset        vector<int>        0,0              オプションのオフセット<br/>各輪郭点はこの値の分だけシフトします
 ================ ================== ================ ====
 
 ポート
@@ -112,10 +113,11 @@ CVFindContoursは ``CVFindContoursComp`` を実行（ ``${prefix}/components/bin
 =============== =========== ============================== ====
 ポート名        ポート型    データ型                       意味
 =============== =========== ============================== ====
-srcImage        InPort      RTC::CameraImage               二値画像の元画像を受け取るポート
+srcImage        InPort      RTC::CameraImage               二値化前のカラー画像を受け取るポート
 thresholdImage  InPort      RTC::CameraImage               輪郭検出を行う二値画像を受け取るポート
-contoursRectangles OutPort     RTC::TimedShortSeq             検出によって得た輪郭点群からなる長方形データを送るためのポート
-contourConvex   OutPort     RTC::TimedShortSeq             輪郭検出によって得た輪郭点群からなる凸図形のデータを送るためのポート
+contoursData    OutPort     RTC::TimedShortSeq             検出によって得た輪郭点群
+contoursRectangles OutPort     RTC::TimedShortSeq             検出によって得られた輪郭点群からなる長方形データを送るためのポート
+contoursConvex  OutPort     RTC::TimedShortSeq             輪郭検出によって得られた輪郭点群からなる凸図形のデータを送るためのポート
 =============== =========== ============================== ====
 
 例

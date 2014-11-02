@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):Image Processing:CVFindContours:1.1.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="CVFindContours" rtc:updateDate="2014-10-30T14:13:44+09:00" rtc:creationDate="2014-10-30T14:13:44+09:00" rtc:version="1.1.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="与えられた二値画像に対して輪郭検出を行う" rtc:category="Image Processing" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="CVFindContours">
-        <rtcDoc:Doc rtcDoc:reference="" rtcDoc:license="" rtcDoc:creator="立川将(Tatekawa Masaru)&lt;br/&gt;Email:y09148@shibaura-it.ac.jp" rtcDoc:algorithm="入力二値画像に対して輪郭検出を行い、結果を描画しつつTimedFloatSeqに配列化して送る&lt;br/&gt;入力やコンフィギュの値を常に確認し、どこか一つでも変更があると輪郭の再検出を行う&lt;br/&gt;出力ポートに送信されるタイミングは、検出後一度きり" rtcDoc:inout="入力&lt;br/&gt;srcImage[CameraImage] - 輪郭検出の結果を描画しその変換閾値などを確認するために用いる二値化前画像データ&lt;br/&gt;thresholdImage[CameraImage] - 輪郭検出の対象二値画像&lt;br/&gt;&lt;br/&gt;出力&lt;br/&gt;輪郭検出の結果となるContoursを配列化したデータ&lt;br/&gt;contoursRectangles [TimedShortSeq] - 長方形化した輪郭データの配列化&lt;br/&gt;contoursConvex [TimedShortSeq] - 凸図形化した輪郭データの配列化" rtcDoc:description="入力された二値画像に対して、コンフィギュレーションパラメータで与えられた検出法や閾値を用いて輪郭検出を行うコンポーネント"/>
+<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):Image Processing:CVFindContours:1.2.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="CVFindContours" rtc:updateDate="2014-11-02T03:04:10.938+09:00" rtc:creationDate="2014-11-01T15:48:55+09:00" rtc:version="1.2.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="与えられた二値画像に対して輪郭検出を行う" rtc:category="Image Processing" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="CVFindContours">
+        <rtcDoc:Doc rtcDoc:reference="" rtcDoc:license="" rtcDoc:creator="立川将(Tatekawa Masaru)&lt;br/&gt;Email:y09148@shibaura-it.ac.jp" rtcDoc:algorithm="入力二値画像に対して輪郭検出を行い、結果を描画しつつTimedShortSeqに配列化して送る&lt;br/&gt;入力やコンフィギュの値を常に確認し、どこか一つでも変更があると輪郭の再検出を行う&lt;br/&gt;出力ポートに送信されるタイミングは、検出後一度きり" rtcDoc:inout="入力&lt;br/&gt;srcImage[CameraImage] - 輪郭検出の結果を描画しその変換閾値などを確認するために用いる二値化前のカラー画像データ&lt;br/&gt;thresholdImage[CameraImage] - 輪郭検出の対象二値画像&lt;br/&gt;&lt;br/&gt;出力&lt;br/&gt;contoursData[TimedShortSeq] - 輪郭検出の結果となるContoursを配列化したデータ&lt;br/&gt;contoursRectangles [TimedShortSeq] - 長方形化した輪郭データの配列&lt;br/&gt;contoursConvex [TimedShortSeq] - 凸図形化した輪郭データの配列" rtcDoc:description="入力された二値画像に対して、コンフィギュレーションパラメータで与えられた検出法や閾値を用いて輪郭検出を行うコンポーネント"/>
         <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
     </rtc:BasicInfo>
     <rtc:Actions>
@@ -53,7 +53,38 @@
             <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="画像表示を選択するための変数" rtcDoc:defaultValue="OFF" rtcDoc:dataname="string"/>
             <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
         </rtc:Configuration>
-        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="fc_mode" rtc:unit="" rtc:defaultValue="EXTERNAL" rtc:type="string" rtc:name="02_FindContourMode">
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="send_type" rtc:unit="" rtc:defaultValue="Rectangle,Convex" rtc:type="string" rtc:name="02_sendDataType">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:Or>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>NonExchange</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>Rectangle</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>Convex</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                    </rtc:Or>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="NonExchange - 無変換の輪郭点データを出力する&lt;br/&gt;Rectangle - 輪郭点データを基に長方形データを作成し出力する&lt;br/&gt;Convex - 輪郭点データを基に凸図形データを作成し出力する&lt;br/&gt;Convex - " rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="出力するデータタイプを選択する変数" rtcDoc:defaultValue="Rectangle,Convex" rtcDoc:dataname="string"/>
+            <rtcExt:Properties rtcExt:value="checkbox" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="fc_mode" rtc:unit="" rtc:defaultValue="EXTERNAL" rtc:type="string" rtc:name="03_FindContourMode">
             <rtc:Constraint>
                 <rtc:ConstraintUnitType>
                     <rtc:Or>
@@ -91,7 +122,7 @@
             <rtcDoc:Doc rtcDoc:constraint="CV_RETR_EXTERNAL - 最も外側の輪郭のみを抽出する&lt;br/&gt;CV_RETR_LIST - すべての輪郭を抽出し，それらをリストに保存する&lt;br/&gt;CV_RETR_CCOMP - すべての輪郭を抽出し，をれらを2階層構造として保存する：上のレベルには，連結成分の外側の境界線が，下のレベルには，連結成分の内側に存在する穴の境界線が属する&lt;br/&gt;CV_RETR_TREE - すべての輪郭を抽出し，入れ子構造になった輪郭を完全に表現する階層構造を構成する" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="輪郭検出のモードを選択するための変数" rtcDoc:defaultValue="EXTERNAL" rtcDoc:dataname="string"/>
             <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
         </rtc:Configuration>
-        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="fc_method" rtc:unit="" rtc:defaultValue="NONE" rtc:type="string" rtc:name="03_FindContourMethod">
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="fc_method" rtc:unit="" rtc:defaultValue="NONE" rtc:type="string" rtc:name="04_FindContourMethod">
             <rtc:Constraint>
                 <rtc:ConstraintUnitType>
                     <rtc:Or>
@@ -133,25 +164,28 @@
                     </rtc:Or>
                 </rtc:ConstraintUnitType>
             </rtc:Constraint>
-            <rtcDoc:Doc rtcDoc:constraint="CV_CHAIN_APPROX_NONE - チェーンコードの全ての点を，通常の点群に変換する&lt;br/&gt;CV_CHAIN_APPROX_SIMPLE - 水平・垂直・斜めの線分を圧縮し，それらの端点のみを残す&lt;br/&gt;CV_CHAIN_APPROX_TC89_L1,CV_CHAIN_APPROX_TC89_KCOS - Teh-Chinチェーン近似アルゴリズムの1つを適用する&lt;br/&gt;CV_LINK_RUNS - 値が1のセグメントを水平方向に接続する，全く異なる輪郭抽出アルゴリズム.ただし、CV_LINK_RUNSはCVRETR_LISTが選択されていなければ使うことができないため、モードがLISTでない場合は、CODEを用いるように変更される" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="輪郭検出のメソッドを選択するための変数" rtcDoc:defaultValue="NONE" rtcDoc:dataname="string"/>
+            <rtcDoc:Doc rtcDoc:constraint="CV_CHAIN_APPROX_NONE - チェーンコードの全ての点を，通常の点群に変換する&lt;br/&gt;CV_CHAIN_APPROX_SIMPLE - 水平・垂直・斜めの線分を圧縮し，それらの端点のみを残す&lt;br/&gt;CV_CHAIN_APPROX_TC89_L1,CV_CHAIN_APPROX_TC89_KCOS - Teh-Chinチェーン近似アルゴリズムの1つを適用する&lt;br/&gt;CV_LINK_RUNS - 値が1のセグメントを水平方向に接続する，全く異なる輪郭抽出アルゴリズム.&lt;br/&gt;ただし、CV_LINK_RUNSはCVRETR_LISTが選択されていなければ使うことができないため、モードがLISTでない場合は、CODEを用いるように変更される" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="輪郭検出のメソッドを選択するための変数" rtcDoc:defaultValue="NONE" rtcDoc:dataname="string"/>
             <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
         </rtc:Configuration>
-        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="offset" rtc:unit="" rtc:defaultValue="0,0" rtc:type="Vector&lt;int&gt;" rtc:name="04_offset">
-            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="オプションのオフセット&lt;br/&gt;各輪郭点はこの値の分だけシフトします" rtcDoc:defaultValue="0,0" rtcDoc:dataname="Vector&lt;int&gt;"/>
-            <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="offset" rtc:unit="" rtc:defaultValue="0,0" rtc:type="vector&lt;int&gt;" rtc:name="05_offset">
+            <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="オプションのオフセット&lt;br/&gt;各輪郭点はこの値の分だけシフトします" rtcDoc:defaultValue="0,0" rtcDoc:dataname="vector&lt;int&gt;"/>
+            <rtcExt:Properties rtcExt:value="checkbox" rtcExt:name="__widget__"/>
         </rtc:Configuration>
     </rtc:ConfigurationSet>
     <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="LEFT" rtcExt:variableName="src_img" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::CameraImage" rtc:name="srcImage" rtc:portType="DataInPort">
-        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="この画像に対し輪郭検出の結果を書き込み、閾値などの検討を行う" rtcDoc:number="1" rtcDoc:type="CameraImage" rtcDoc:description="二値画像の元画像を受け取るポート"/>
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="この画像に対し輪郭検出の結果を書き込み、閾値などの検討を行う" rtcDoc:number="1" rtcDoc:type="CameraImage" rtcDoc:description="二値化前のカラー画像を受け取るポート"/>
     </rtc:DataPorts>
     <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="LEFT" rtcExt:variableName="thre_img" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::CameraImage" rtc:name="thresholdImage" rtc:portType="DataInPort">
-        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="輪郭検出を行いたいデータ&lt;br/&gt;ここの接続がない場合は、srcImageの画像を固定値で二値化し輪郭検出を行う" rtcDoc:number="1" rtcDoc:type="Cameraimage" rtcDoc:description="輪郭検出を行う二値画像を受け取るポート"/>
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="輪郭検出を行いたいデータ&lt;br/&gt;ここの接続がない場合は、srcImageの画像を固定値で二値化し輪郭検出を行う" rtcDoc:number="1" rtcDoc:type="CameraImage" rtcDoc:description="輪郭検出を行う二値画像を受け取るポート"/>
+    </rtc:DataPorts>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="RIGHT" rtcExt:variableName="cont_data" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::TimedShortSeq" rtc:name="contoursData" rtc:portType="DataOutPort">
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="検出結果のcontoursの要素を配列化して送信する&lt;br/&gt;Point p1,p2,p3,p4からなるVector&lt;Point&gt; convex1に対し&lt;br/&gt; - convex1.size() [0]&lt;br/&gt; - convex1.p1.x [1]&lt;br/&gt; - convex1.p1.y [2]&lt;br/&gt; - convex1.p2.x [3]&lt;br/&gt; - convex1.p2.y [4]&lt;br/&gt; - convex1.p3.x [5]&lt;br/&gt; - convex1.p3.y [6]&lt;br/&gt; - convex1.p4.x [7]&lt;br/&gt; - convex1.p4.y [8]&lt;br/&gt;これら9つの要素を配列に格納して送る&lt;br/&gt;すなわち[0]~[8]で一つの図形となる&lt;br/&gt;受け取り側は[0]にあたるデータ数分のPointが来ると認識し、&lt;br/&gt;そのPoint数分格納したら次のvector処理へ進む" rtcDoc:number="検出輪郭群数*(1+輪郭点数*2)" rtcDoc:type="TimedShortSeq" rtcDoc:description="検出によって得た輪郭点群"/>
     </rtc:DataPorts>
     <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="RIGHT" rtcExt:variableName="cont_rect" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::TimedShortSeq" rtc:name="contoursRectangles" rtc:portType="DataOutPort">
-        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="Rectangleの要素を配列化して送信する&lt;br/&gt;Rectangle r1の左上の点p1.x,p1.yとwidth,heightを&lt;br/&gt;- r1.p1.x [0]&lt;br/&gt;- r1.p1.y [1]&lt;br/&gt; - r1.width [2]&lt;br/&gt; - r1.height [3]&lt;br/&gt;これら4つの要素を配列に格納して送る　すなわち[0]~[3]で一つの長方形となる" rtcDoc:number="長方形数*4" rtcDoc:type="TimedShortSeq" rtcDoc:description="検出によって得た輪郭点群からなる長方形データを送るためのポート"/>
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="Rectangleの要素を配列化して送信する&lt;br/&gt;Rectangle r1の左上の点p1.x,p1.yとwidth,heightを&lt;br/&gt; - r1.p1.x [0]&lt;br/&gt; - r1.p1.y [1]&lt;br/&gt; - r1.width [2]&lt;br/&gt; - r1.height [3]&lt;br/&gt;これら4つの要素を配列に格納して送る&lt;br/&gt;すなわち[0]~[3]で一つの長方形となる" rtcDoc:number="長方形数*4" rtcDoc:type="TimedShortSeq" rtcDoc:description="検出によって得られた輪郭点群からなる長方形データを送るためのポート"/>
     </rtc:DataPorts>
-    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="RIGHT" rtcExt:variableName="cont_convex" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::TimedShortSeq" rtc:name="contourConvex" rtc:portType="DataOutPort">
-        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="convexとして用いるvect&lt;Point&gt;のデータを配列化して送信する　Point p1,p2,p3,p4からなるVector&lt;Point&gt;　convex1に対し&lt;br/&gt; - convex1.size() [0]&lt;br/&gt; - convex1.p1.x [1]&lt;br/&gt; - convex1.p1.y [2]&lt;br/&gt; - convex1.p2.x [3]&lt;br/&gt; - convex1.p2.y [4]&lt;br/&gt; - convex1.p3.x [5]&lt;br/&gt; - convex1.p3.y [6]&lt;br/&gt; - convex1.p4.x [7]&lt;br/&gt; - convex1.p4.y [8]&lt;br/&gt;これら9つの要素を配列に格納して送る　すなわち[0]~[8]で一つの図形となる　受け取り側は、[0]にあたるデータ数分のPointが来ると認識し、そのPoint数分格納したら次のvector処理へ進む" rtcDoc:number="全図形数*(図形の持つ凸数*2 + 1)" rtcDoc:type="TimedShortSeq" rtcDoc:description="輪郭検出によって得た輪郭点群からなる凸図形のデータを送るためのポート"/>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="RIGHT" rtcExt:variableName="cont_convex" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::TimedShortSeq" rtc:name="contoursConvex" rtc:portType="DataOutPort">
+        <rtcDoc:Doc rtcDoc:operation="" rtcDoc:occerrence="" rtcDoc:unit="" rtcDoc:semantics="convexとして用いるvect&lt;Point&gt;のデータを配列化して送信する&lt;br/&gt;Pointp1,p2,p3,p4からなるVector&lt;Point&gt; convex1に対し&lt;br/&gt; - convex1.size() [0]&lt;br/&gt; - convex1.p1.x [1]&lt;br/&gt; - convex1.p1.y [2]&lt;br/&gt; - convex1.p2.x [3]&lt;br/&gt; - convex1.p2.y [4]&lt;br/&gt; - convex1.p3.x [5]&lt;br/&gt; - convex1.p3.y [6]&lt;br/&gt; - convex1.p4.x [7]&lt;br/&gt; - convex1.p4.y [8]&lt;br/&gt;これら9つの要素を配列に格納して送る&lt;br/&gt;すなわち[0]~[8]で一つの図形となる&lt;br/&gt;受け取り側は、[0]にあたるデータ数分のPointが来ると認識し、&lt;br/&gt;そのPoint数分格納したら次のvector処理へ進む" rtcDoc:number="全図形数*(1+図形の持つ凸数*2)" rtcDoc:type="TimedShortSeq" rtcDoc:description="輪郭検出によって得られた輪郭点群からなる凸図形のデータを送るためのポート"/>
     </rtc:DataPorts>
     <rtc:Language xsi:type="rtcExt:language_ext" rtc:kind="C++"/>
 </rtc:RtcProfile>

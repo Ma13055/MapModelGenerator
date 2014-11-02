@@ -5,7 +5,7 @@
  * @date $Date$
  *
  * @author 立川将(Tatekawa Masaru)
- * Email:y09148@shibaura-it.ac.jp
+ * Email:y09148@shibaura-it.ac.jptt
  *
  * $Id$
  */
@@ -18,6 +18,8 @@
 using namespace cv;
 using namespace std;
 
+//文字列の分割を行う
+vector<string> split(string str, char delim);
 // string値を比較し、違う値の場合は比較元に比較対象を上書きする
 bool equalPara(string &src, string para);
 //double値を比較し、違う値の場合は比較元に比較対象を上書きする
@@ -42,7 +44,7 @@ static const char* cvfindcontours_spec[] =
     "implementation_id", "CVFindContours",
     "type_name",         "CVFindContours",
     "description",       "与えられた二値画像に対して輪郭検出を行う",
-    "version",           "1.1.0",
+    "version",           "1.2.0",
     "vendor",            "Masaru Tatekawa(SIT)",
     "category",          "Image Processing",
     "activity_type",     "PERIODIC",
@@ -52,18 +54,21 @@ static const char* cvfindcontours_spec[] =
     "lang_type",         "compile",
     // Configuration variables
     "conf.default.01_ImageView", "OFF",
-    "conf.default.02_FindContourMode", "EXTERNAL",
-    "conf.default.03_FindContourMethod", "NONE",
-    "conf.default.04_offset", "0,0",
+    "conf.default.02_sendDataType", "Rectangle,Convex",
+    "conf.default.03_FindContourMode", "EXTERNAL",
+    "conf.default.04_FindContourMethod", "NONE",
+    "conf.default.05_offset", "0,0",
     // Widget
     "conf.__widget__.01_ImageView", "radio",
-    "conf.__widget__.02_FindContourMode", "radio",
-    "conf.__widget__.03_FindContourMethod", "radio",
-    "conf.__widget__.04_offset", "text",
+    "conf.__widget__.02_sendDataType", "checkbox",
+    "conf.__widget__.03_FindContourMode", "radio",
+    "conf.__widget__.04_FindContourMethod", "radio",
+    "conf.__widget__.05_offset", "checkbox",
     // Constraints
     "conf.__constraints__.01_ImageView", "(ON,OFF)",
-    "conf.__constraints__.02_FindContourMode", "(EXTERNAL,LIST,CCOMP,TREE)",
-    "conf.__constraints__.03_FindContourMethod", "(NONE,SIMPLE,TC89_L1,TC89_KCOS,LINK_RUNS)",
+    "conf.__constraints__.02_sendDataType", "(NonExchange,Rectangle,Convex)",
+    "conf.__constraints__.03_FindContourMode", "(EXTERNAL,LIST,CCOMP,TREE)",
+    "conf.__constraints__.04_FindContourMethod", "(NONE,SIMPLE,TC89_L1,TC89_KCOS,LINK_RUNS)",
     ""
   };
 // </rtc-template>
@@ -77,8 +82,9 @@ CVFindContours::CVFindContours(RTC::Manager* manager)
   : RTC::DataFlowComponentBase(manager),
     m_src_imgIn("srcImage", m_src_img),
     m_thre_imgIn("thresholdImage", m_thre_img),
+    m_cont_dataOut("contoursData", m_cont_data),
     m_cont_rectOut("contoursRectangles", m_cont_rect),
-    m_cont_convexOut("contourConvex", m_cont_convex)
+    m_cont_convexOut("contoursConvex", m_cont_convex)
 
     // </rtc-template>
 {
@@ -102,8 +108,9 @@ RTC::ReturnCode_t CVFindContours::onInitialize()
   addInPort("thresholdImage", m_thre_imgIn);
   
   // Set OutPort buffer
+  addOutPort("contoursData", m_cont_dataOut);
   addOutPort("contoursRectangles", m_cont_rectOut);
-  addOutPort("contourConvex", m_cont_convexOut);
+  addOutPort("contoursConvex", m_cont_convexOut);
   
   // Set service provider to Ports
   
@@ -116,9 +123,10 @@ RTC::ReturnCode_t CVFindContours::onInitialize()
   // <rtc-template block="bind_config">
   // Bind variables and configuration variable
   bindParameter("01_ImageView", m_img_view, "OFF");
-  bindParameter("02_FindContourMode", m_fc_mode, "EXTERNAL");
-  bindParameter("03_FindContourMethod", m_fc_method, "NONE");
-  bindParameter("04_offset", m_offset, "0,0");
+  bindParameter("02_sendDataType", m_send_type, "Rectangle,Convex");
+  bindParameter("03_FindContourMode", m_fc_mode, "EXTERNAL");
+  bindParameter("04_FindContourMethod", m_fc_method, "NONE");
+  bindParameter("05_offset", m_offset, "0,0");
   // </rtc-template>
   
   return RTC::RTC_OK;
@@ -190,7 +198,7 @@ RTC::ReturnCode_t CVFindContours::onDeactivated(RTC::UniqueId ec_id)
 	destroyWindow("receiveImage");
 	destroyWindow("contoursView");
 
-  return RTC::RTC_OK;
+	return RTC::RTC_OK;
 }
 
 /*!
@@ -207,6 +215,25 @@ RTC::ReturnCode_t CVFindContours::onExecute(RTC::UniqueId ec_id)
 	//入力ポートthresholdImageのデータを読み込む
 	if(m_thre_imgIn.isNew()){
 		m_thre_imgIn.read();
+	}
+
+	//コンフィグのcheckboxに変更があった場合
+	//出力形式選択配列の変更を行う
+	bool repaint = false;
+	if(checkbox != m_send_type){
+		checkbox = m_send_type;
+
+		for(int i = 0;i<3;i++){
+			checkbox_flag[i] = false;
+		}
+
+		vector<string> vs_checkbox = split(checkbox,',');
+		for(vector<string>::iterator it = vs_checkbox.begin(); it != vs_checkbox.end() ; it++){
+			if(*it == "NonExchange")checkbox_flag[0] = true;
+			else if(*it == "Rectangle")checkbox_flag[1] = true;
+			else checkbox_flag[2] = true;
+		}
+		repaint = true;
 	}
 
 	//defaultImageかthresholdImageのデータがすでに受け取っているデータと違う場合
@@ -266,10 +293,11 @@ RTC::ReturnCode_t CVFindContours::onExecute(RTC::UniqueId ec_id)
 		if(!equalPara(offset.x,m_offset.at(0)))remake = true;
 		if(!equalPara(offset.y,m_offset.at(1)))remake = true;
 
+		/*------------輪郭の再検出--------------*/
 		if(remake == true){
 			//輪郭抽出 contoursに保存
 			vector<vector<Point> > contours_sub;
-			vector<vector<Point> > contours;
+			contours.clear();
 
 			makeContours( gray_img, contours_sub, mode, method, offset);
 
@@ -280,49 +308,109 @@ RTC::ReturnCode_t CVFindContours::onExecute(RTC::UniqueId ec_id)
 			}
 
 			//輪郭点データ群を基に輪郭データ群を囲む長方形と凸図形を作成
-			vector<Rect> boundRect( contours.size() );
-			vector<vector<Point> >hull( contours.size() );
+			cont_rect.clear();
+			cont_rect.resize( contours.size() );
+			cont_convex.clear();
+			cont_convex.resize( contours.size() );
 			for(int i=0;i<contours.size();i++){
-				boundRect[i] = boundingRect( Mat(contours[i]) );
-				convexHull( Mat(contours[i]), hull[i], false );
+				cont_rect[i] = boundingRect( Mat(contours[i]) );
+				convexHull( Mat(contours[i]), cont_convex[i], false );
 			}
-		
-			cvtColor(src_img,draw_img,CV_RGB2GRAY);
+		}
+
+
+		/*------------描画及びOurPortの更新--------------*/
+		if(remake == true || repaint == true){
+
+			//元画像を黒白のカラー画像にする
+			if(src_img.elemSize() != 1)cvtColor(src_img,draw_img,CV_RGB2GRAY);
 			cvtColor(draw_img,draw_img,CV_GRAY2RGB);
 
 			int hull_counter = 0;
+			int cont_counter = 0;
 
 			//輪郭点データ群, 輪郭を囲む長方形, 輪郭を囲む凸図形を描画
 			for( int i = 0; i< contours.size(); i++ ){
-				drawContours( draw_img, contours, i, Scalar(255,0,0), 1, 8, vector<Vec4i>(), 0, Point() );
-				rectangle( draw_img, boundRect[i].tl(), boundRect[i].br(),Scalar(0,0,255), 1, 8, 0 );
-				drawContours( draw_img, hull, i, Scalar(0,255,0), 1, 8, vector<Vec4i>(), 0, Point() );
-				hull_counter += hull[i].size()*2 + 1;
-			}
+				//checkboxのNonExchangeがONの場合
+				//輪郭点データ群を描画
+				if(checkbox_flag[0]){
+					drawContours( draw_img, contours, i, Scalar(255,0,0), 1, 8, vector<Vec4i>(), 0, Point() );
+					cont_counter += contours[i].size()*2 + 1;
+				}
 
-			//OutPortに長方形データと凸図形データを送る
-			m_cont_rect.data.length(boundRect.size()*4);
-			m_cont_convex.data.length(hull_counter);
-			hull_counter = 0;
-			for(int i = 0; i< contours.size(); i++){
-				m_cont_rect.data[i*4+0] = boundRect[i].tl().x;
-				m_cont_rect.data[i*4+1] = boundRect[i].tl().y;
-				m_cont_rect.data[i*4+2] = boundRect[i].width;
-				m_cont_rect.data[i*4+3] = boundRect[i].height;
+				//checkboxのRectangleがONの場合
+				//長方形データ群を描画
+				if(checkbox_flag[1])rectangle( draw_img, cont_rect[i].tl(), cont_rect[i].br(),Scalar(0,0,255), 1, 8, 0 );
 
-				m_cont_convex.data[hull_counter++] = hull[i].size()*2;
-				for(int j = 0; j < hull[i].size(); j++){
-					m_cont_convex.data[hull_counter++] = hull[i][j].x;
-					m_cont_convex.data[hull_counter++] = hull[i][j].y;
+				//checkboxのConvexがONの場合
+				//凸図形データ群を描画
+				if(checkbox_flag[2]){
+					drawContours( draw_img, cont_convex, i, Scalar(0,255,0), 1, 8, vector<Vec4i>(), 0, Point() );
+					hull_counter += cont_convex[i].size()*2 + 1;
 				}
 			}
 
-			setTimestamp(m_cont_rect);
-			setTimestamp(m_cont_convex);
-			m_cont_rectOut.write();
-			m_cont_convexOut.write();
+			//それぞれのoutPortの配列数を変更
+			if(checkbox_flag[0])m_cont_data.data.length(cont_counter);
+			if(checkbox_flag[1])m_cont_rect.data.length(cont_rect.size()*4);
+			if(checkbox_flag[2])m_cont_convex.data.length(hull_counter);
+
+			cont_counter = 0;
+			hull_counter = 0;
+				
+			//OutPortに輪郭データを送信
+			for(int i = 0; i< contours.size(); i++){
+				//checkboxのNonExchangeがONの場合
+				//輪郭点データ群をOutPortに書き込み
+				if(checkbox_flag[0]){
+					m_cont_data.data[cont_counter++] = contours[i].size()*2;
+					for(int j = 0; j < contours[i].size(); j++){
+						m_cont_data.data[cont_counter++] = contours[i][j].x;
+						m_cont_data.data[cont_counter++] = contours[i][j].y;
+					}
+				}
+
+				//checkboxのRectangleがONの場合
+				//長方形データ群をOutPortに書き込み
+				if(checkbox_flag[1]){
+					m_cont_rect.data[i*4+0] = cont_rect[i].tl().x;
+					m_cont_rect.data[i*4+1] = cont_rect[i].tl().y;
+					m_cont_rect.data[i*4+2] = cont_rect[i].width;
+					m_cont_rect.data[i*4+3] = cont_rect[i].height;
+				}
+
+				//checkboxのConvexがONの場合
+				//凸図形データ群をOutPortに書き込み
+				if(checkbox_flag[2]){
+					m_cont_convex.data[hull_counter++] = cont_convex[i].size()*2;
+					for(int j = 0; j < cont_convex[i].size(); j++){
+						m_cont_convex.data[hull_counter++] = cont_convex[i][j].x;
+						m_cont_convex.data[hull_counter++] = cont_convex[i][j].y;
+					}
+				}
+			}
+
+			//無変換の輪郭点データ群を送信
+			if(checkbox_flag[0]){
+				m_cont_data.data.length(cont_counter);
+				setTimestamp(m_cont_data);
+				m_cont_dataOut.write();
+			}
+			//長方形の輪郭点データ群を送信
+			if(checkbox_flag[1]){
+				m_cont_rect.data.length(cont_rect.size()*4);
+				setTimestamp(m_cont_rect);
+				m_cont_rectOut.write();
+			}
+			//凸図形の輪郭点データ群を送信
+			if(checkbox_flag[2]){
+				m_cont_convex.data.length(hull_counter);
+				setTimestamp(m_cont_convex);
+				m_cont_convexOut.write();
+			}
 
 			remake = false;
+			repaint = false;
 		}
 
 		//処理画像をウィンドウに表示
@@ -344,7 +432,7 @@ RTC::ReturnCode_t CVFindContours::onExecute(RTC::UniqueId ec_id)
 
 	waitKey(1);
 
-  return RTC::RTC_OK;
+	return RTC::RTC_OK;
 }
 
 /*
@@ -550,4 +638,21 @@ void makeContours( Mat &grayImg, vector<vector<Point>> &cont, string mode, strin
 
 	cout<<"makeContours : END"<<endl;
 	return;
+}
+
+/**
+* 文字列の分割を行う
+* @para const string &str	分割の対象となる文字列
+* @para char delim			分割のサインとなる文字
+* @return vector<string>	分割結果の文字列のvector
+*/
+vector<string> split(string str,char delim){
+	vector<string> res;
+	size_t current = 0, found;
+	while((found = str.find_first_of(delim, current)) != string::npos){
+		res.push_back(string(str, current, found - current));
+		current = found + 1;
+	}
+	res.push_back(string(str, current, str.size() - current));
+	return res;		//分割されない場合は受け取ったstrの情報を0分割して返す
 }
