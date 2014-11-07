@@ -526,18 +526,18 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 							if( PathFileExists( m_save_space.c_str() )){
 								//ラインマップの書き出し先を作成
 								str_line << m_save_space; str_line << "\\LineMapCordinate"; str_line << send_pict;
-								str_img << m_save_space; str_img << "\\LineMapImage"; str_img << send_pict;
+								str_img << m_save_space; str_img << "\\LineMapImage"; str_img << send_pict; str_img << ".jpg";
 
 							}else{
 								//ラインマップの書き出し先を作成
 								str_line << tempName; str_line << "\\LineMapCordinate"; str_line << send_pict;
-								str_img << tempName; str_img << "\\LineMapImage"; str_img << send_pict;
+								str_img << tempName; str_img << "\\LineMapImage"; str_img << send_pict; str_img<<".jpg";
 							}
 							//結果のラインマップのvector<vector<Point>>を保存先に書き出し
 							writeLineMapData(str_line.str(),map_line);
 							compMapsPath.at(send_pict) = str_line.str();
 							//結果の描画画像を保存先に書き出し
-							imwrite(str_img.str(),CamToMat(compImg));
+							makepathString(str_img.str(),compImg);
 
 							//処理対象画像のインデックスをすすめる
 							send_pict++;
@@ -561,12 +561,12 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 							if( PathFileExists( m_save_space.c_str() )){
 								//ラインマップの書き出し先を作成
 								str_line << m_save_space; str_line << "\\LineMapCordinate"; str_line << send_pict;
-								str_img << m_save_space; str_img << "\\LineMapImage"; str_img << send_pict;
+								str_img << m_save_space; str_img << "\\LineMapImage"; str_img << send_pict; str_img << ".jpg";
 
 							}else{
 								//ラインマップの書き出し先を作成
 								str_line << tempName; str_line << "\\LineMapCordinate"; str_line << send_pict;
-								str_img << tempName; str_img << "\\LineMapImage"; str_img << send_pict;
+								str_img << tempName; str_img << "\\LineMapImage"; str_img << send_pict; str_img << ".jpg";
 							}
 							//結果のラインマップのvector<vector<Point>>を保存先に書き出し
 							writeLineMapData(str_line.str(),map_line);
