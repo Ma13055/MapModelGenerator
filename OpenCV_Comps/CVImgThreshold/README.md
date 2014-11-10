@@ -5,7 +5,7 @@ CVImgThreshold
 概要
 --------
 ![ImgThreshold01](http://www.sic.shibaura-it.ac.jp/~ma13055/ImgThreshold01)
-
+![ImgThreshold02](http://www.sic.shibaura-it.ac.jp/~ma13055/ImgThreshold02)
 
 
 ### 使用関数 ###
