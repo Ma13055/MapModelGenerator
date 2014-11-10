@@ -5,7 +5,7 @@ OpenCV_Comps
 
 概要
 --------
-提供コンポーネントは以下の関数のコンポーネントです。
+提供コンポーネントは以下の関数を持つコンポーネントです。
 * CVCanny - エッジ検出コンポーネント
    * Canny();
 * CVFeatureDetector - 特徴点検出コンポーネント
@@ -35,7 +35,7 @@ OpenCV_Comps
 仕様
 --------
 Windows7 32bit,64bit  
-OpenRTM-aist-1.1.0-RELEASE（C++,Java版)  
+OpenRTM-aist-1.1.0-RELEASE（C++)  
 Eclipse 3.8.1 + OpenRTM Eclipse tools 1.1.0-RC4
 
 
