@@ -31,7 +31,7 @@ CVHoughThransform
        int threshold,            //投票の閾値パラメータ
        double minLineLength=0,   //最小の線分長
        double maxLineGap=0       //2点が同一線分上にあると見なす場合に許容される最大距離
-       );
+      );
 
 ### outPortの具体説明 ###
 outPortのTimedShortSeqには、線分の端点座標が配列化されています。  
