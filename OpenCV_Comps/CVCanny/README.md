@@ -7,6 +7,15 @@ CVCanny
 ![Canny02](http://www.sic.shibaura-it.ac.jp/~ma13055/Canny02)
 
 
+### 使用関数 ###
+  void cvCanny(
+      const CvArr* image,   // 入力画像
+      CvArr* edges,         // 出力画像
+      double threshold1,    // 1番目のしきい値
+      double threshold2,    // 2番目のしきい値
+      int aperture_size = 3 // アパーチャサイズ
+      );
+
 仕様
 --------
 Windows7 32bit,64bit  
