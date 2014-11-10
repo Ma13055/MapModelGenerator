@@ -55,7 +55,7 @@ outPortのTimedShortSeqには、線分の端点座標が配列化されていま
       if(inportIn.isNew()){
          inportIn.read();
          
-         for(int i=0;i<inport.data.length();i+=4){
+         for(int i=0 ; i<inport.data.length()-3 ; i+=4){
             vector<Point> line;
             line.pushback(Point(inport.data[i],inport.data[i+1]));
             line.pushback(Point(inport.data[i+2],inport.data[i+3]));
