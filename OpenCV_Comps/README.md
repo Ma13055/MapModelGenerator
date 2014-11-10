@@ -1,29 +1,35 @@
 OpenCV_Comps
 =================
-このフォルダでは、OpenCVの関数をコンポーネント化したもとを提供しています。 
+このフォルダでは、OpenCVの関数をコンポーネント化したものを提供しています。 
 
 
 概要
 --------
 提供コンポーネントは以下の関数のコンポーネントです。
 * CVCanny - エッジ検出コンポーネント
-   * 
-* OpenImage  
-* GenerateMapModels  
-に分かれております。
-
-ファイル構成
---------
-機能ごと、特に再利用性のレベルにファイル分解して公開をさせていただいております。  
-MapModelGenerator  
-|-OpenCV_Comps  
-|-tools  
-
-* OpenCV_Comps
-    * OpenCVの関数をコンポーネント化した、再利用性の高いコンポーネント
-* tools
-    * UserInterface, OpenImageと、  
-その他簡易地図生成に特化して作られた再利用性の低いコンポーネント
+   * Canny();
+* CVFeatureDetector - 特徴点検出コンポーネント
+   * FastFeatureDetector
+   * GoodFeaturesToTrackDetector
+   * StarFeatureDetector
+   * SiftFeatureDetector
+   * SurfFeatureDetector
+   * MserFeatureDetector
+   * GridAdaptedFeatureDetector();
+   * PyramidAdaptedFeatureDetector();
+   * DynamicAdaptedFeatureDetector();
+* CVFindContours - 輪郭点検出コンポーネント
+   * makeContours();
+   * approxPolyDP();
+   * ConvexHull();
+* CVHoughTransform - ハフ変換コンポーネント
+   * HoughLine();
+   * HoughLineP();
+* CVImgThreshold - 二値化処理コンポーネント
+   * threshold();
+   * adaptiveThreshold();
+* CVInpaint - 修復処理コンポーネント
+   * inpaint();
 
 
 仕様
