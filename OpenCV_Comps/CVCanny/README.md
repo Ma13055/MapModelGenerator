@@ -9,7 +9,8 @@ CVCanny
 
 ### 使用関数 ###
 [OpenCV_Canny](http://opencv.jp/opencv-2.2/c/imgproc_feature_detection.html "OpenCV_Canny")
-    void cvCanny(
+
+     void cvCanny(
       const CvArr* image,   // 入力画像
       CvArr* edges,         // 出力画像
       double threshold1,    // 1番目のしきい値
