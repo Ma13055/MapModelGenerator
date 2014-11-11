@@ -10,8 +10,10 @@ MapModelGenerator
 変換システムの大枠での内部ブロック図としましては  
 * UserInterface  
 * OpenImage  
-* GenerateMapModels  
-に分かれております。
+* GenerateMapModels
+
+に分かれております。  
+![SysML01](http://www.sic.shibaura-it.ac.jp/~ma13055/内部ブロック図)
 
 ファイル構成
 --------
