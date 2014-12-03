@@ -29,7 +29,7 @@ public class controlPanel implements RtcNewFunc, RtcDeleteFunc, RegisterModuleFu
     	    "implementation_id", "controlPanel",
     	    "type_name",         "controlPanel",
     	    "description",       "Get mouse event",
-    	    "version",           "1.1.0",
+    	    "version",           "1.2.0",
     	    "vendor",            "Masaru Tatekawa(SIT)",
     	    "category",          "UI",
     	    "activity_type",     "UNIQUE",

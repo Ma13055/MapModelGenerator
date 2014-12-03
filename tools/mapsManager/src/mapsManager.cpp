@@ -23,8 +23,6 @@
 using namespace cv;
 using namespace std;
 
-//引数分wait処理を行う
-void wait(int tm_i,int tm_j);
 //CameraImage型のデータをMat型に変換する
 Mat CamToMat(CameraImage &m_recImg);
 //Mat型のデータをCameraImage型に変換する
@@ -44,7 +42,6 @@ void drawContoursImage(vector<vector<Point> > cont,Mat &src_img);
 //与えられた保存先にvector<vector<Point>>型のデータを書き出す
 void writeLineMapData(string str,vector<vector<Point> > &vvp);
 
-
 // Module specification
 // <rtc-template block="module_spec">
 static const char* mapsmanager_spec[] =
@@ -52,7 +49,7 @@ static const char* mapsmanager_spec[] =
     "implementation_id", "mapsManager",
     "type_name",         "mapsManager",
     "description",       "地図画像から地図モデルへの変換を管理し、結果の保存を行う",
-    "version",           "1.1.0",
+    "version",           "1.2.0",
     "vendor",            "Masaru Tatekawa(SIT)",
     "category",          "Conversion",
     "activity_type",     "PERIODIC",
@@ -63,14 +60,17 @@ static const char* mapsmanager_spec[] =
     // Configuration variables
     "conf.default.01_ImageView", "OFF",
     "conf.default.02_SelectPictNum", "0",
-    "conf.default.03_SaveSpace", "C:\\tmp\\maps\\linemaps",
+    "conf.default.03_SaveSpace", "C:\\tmp\\makeMapsModel\\maps\\linemaps",
+    "conf.default.04_SkipNormalize", "NON",
     // Widget
     "conf.__widget__.01_ImageView", "radio",
     "conf.__widget__.02_SelectPictNum", "text",
     "conf.__widget__.03_SaveSpace", "text",
+    "conf.__widget__.04_SkipNormalize", "radio",
     // Constraints
     "conf.__constraints__.01_ImageView", "(ON,OFF)",
     "conf.__constraints__.02_SelectPictNum", "x>=0",
+    "conf.__constraints__.04_SkipNormalize", "(NON,SKIP)",
     ""
   };
 // </rtc-template>
@@ -84,7 +84,7 @@ mapsManager::mapsManager(RTC::Manager* manager)
   : RTC::DataFlowComponentBase(manager),
     m_rec_cam_imgIn("receiveCamImg", m_rec_cam_img),
     m_rec_flagIn("receiveFlagData", m_rec_flag),
-    m_In_temp_pathIn("tempFloderPath", m_In_temp_path),
+    m_In_temp_pathIn("tempFolderPath", m_In_temp_path),
     m_click_pointIn("clickPoint", m_click_point),
     m_map_normIn("compNormalizedMap", m_map_norm),
     m_map_lineIn("compLineMap", m_map_line),
@@ -121,7 +121,7 @@ RTC::ReturnCode_t mapsManager::onInitialize()
   // Set InPort buffers
   addInPort("receiveCamImg", m_rec_cam_imgIn);
   addInPort("receiveFlagData", m_rec_flagIn);
-  addInPort("tempFloderPath", m_In_temp_pathIn);
+  addInPort("tempFolderPath", m_In_temp_pathIn);
   addInPort("clickPoint", m_click_pointIn);
   addInPort("compNormalizedMap", m_map_normIn);
   addInPort("compLineMap", m_map_lineIn);
@@ -152,7 +152,8 @@ RTC::ReturnCode_t mapsManager::onInitialize()
   // Bind variables and configuration variable
   bindParameter("01_ImageView", m_img_view, "OFF");
   bindParameter("02_SelectPictNum", m_select_pict_num, "0");
-  bindParameter("03_SaveSpace", m_save_space, "C:\\tmp\\maps\\linemaps");
+  bindParameter("03_SaveSpace", m_save_space, "C:\\tmp\\makeMapsModel\\maps\\linemaps");
+  bindParameter("04_SkipNormalize", m_skip_norm, "NON");
   // </rtc-template>
   
   return RTC::RTC_OK;
@@ -185,14 +186,14 @@ RTC::ReturnCode_t mapsManager::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t mapsManager::onActivated(RTC::UniqueId ec_id)
 {
-	cout<<"onActivate:START"<<endl;
+	cout<<"mapsManager : onActivate:START"<<endl;
 
 	//temp領域のパスを読み込む
 	if(m_In_temp_pathIn.isNew()){
 		m_In_temp_pathIn.read();
 		tempName = m_In_temp_path.data;
 	}else{
-		tempName = "C:\\tmp\\sub";
+		tempName = "C:\\tmp\\makeMapsModel";
 	}
 	m_out_temp_path.data = tempName.c_str();
 	setTimestamp(m_out_temp_path);
@@ -225,7 +226,7 @@ RTC::ReturnCode_t mapsManager::onActivated(RTC::UniqueId ec_id)
 	first_flag = true;
 	remake = false;
 
-	cout<<"onActivate:END"<<endl;
+	cout<<"mapsManager : onActivate:END"<<endl;
 
   return RTC::RTC_OK;
 }
@@ -295,7 +296,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 				compLineMapSeq.resize(getPictSeq.size());
 				compMapsPath.resize(getPictSeq.size());
 
-				cout<<"END : "<<getPictSeq.size()<<endl;
+				cout<<"mapsManager : END : "<<getPictSeq.size()<<endl;
 				//受け渡し処理終了フラグを立てる
 				receiveEndFlag = true;
 			}
@@ -323,7 +324,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 				if(!equalCamImg(old_receive_img,m_rec_cam_img)){
 					//違う画像だった場合、前回画像を画像保管vectorに保管
 					getPictSeq.push_back(old_receive_img);
-					cout<<"RECEIVE : "<<getPictSeq.size()<<endl;
+					cout<<"mapsManager : RECEIVE : "<<getPictSeq.size()<<endl;
 					//前回画像変数を更新
 					old_receive_img = m_rec_cam_img;
 				}
@@ -346,6 +347,21 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 			send_pict = m_select_pict_num;
 		}
 
+		//正規化処理のスキップが選択されているかの確認
+		if(normalized_flag == false && m_skip_norm == "SKIP"){
+			//受け取った画像を処理済み画像配列へコピー
+			
+			compPictSeq = getPictSeq;
+			//座標マップ化への初期化を行う
+			old_comp_img = makeEmptyCamImg();
+			old_receive_img = makeEmptyCamImg();
+
+			send_pict = 0;
+			conf_pict_num = 0;
+
+			normalized_flag = true;
+		}
+
 /*------------------------地図モデル生成のための、地図画像の正規化----------------------------*/
 
 		if(normalized_flag == false){
@@ -363,7 +379,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 
 			//処理する画像をtemp領域に保存
 			//保存場所の絶対パスをOutPortにコピー
-			m_norm_src_img_path = makepathString(tempName + "\\src_pict.jpg",m_norm_src_img);
+			m_norm_src_img_path = makepathString(tempName + "\\sub\\src_pict.jpg",m_norm_src_img);
 			m_norm_src_img_pathOut.write();
 
 			if(m_map_normIn.isNew()){
@@ -387,7 +403,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 
 					//処理する画像をtemp領域に保存
 					//保存場所の絶対パスをOutPortにコピー
-					m_norm_comp_img_path = makepathString(tempName + "\\comp_pict.jpg",compImg);
+					m_norm_comp_img_path = makepathString(tempName + "\\sub\\comp_pict.jpg",compImg);
 					m_norm_comp_img_pathOut.write();
 					
 
@@ -441,7 +457,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 
 								normalized_flag = true;
 							}else{
-								cout<<"Non Full Comp"<<endl;
+								cout<<"mapsManager : Non Full Comp"<<endl;
 							}
 						}
 						first_flag = true;
@@ -462,7 +478,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 
 			//処理する画像をtemp領域に保存
 			//保存場所の絶対パスをOutPortにコピー
-			m_line_src_img_path = makepathString(tempName + "\\mapManager_linesrc_pict.jpg",m_line_src_img);
+			m_line_src_img_path = makepathString(tempName + "\\sub\\mapManager_linesrc_pict.jpg",m_line_src_img);
 			m_line_src_img_pathOut.write();
 
 
@@ -474,7 +490,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 
 				//処理結果が更新された場合
 				if(!equalTimedShortSeq(old_map_line,m_map_line)){
-					cout<<"changeLine"<<endl;
+					cout<<"mapsManager : changeLine"<<endl;
 
 					seqToVec(old_map_line,map_line);
 				}
@@ -507,7 +523,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 
 					//処理する画像をtemp領域に保存
 					//保存場所の絶対パスをOutPortにコピー
-					m_line_comp_img_path = makepathString(tempName + "\\comp_pict.jpg",compImg);
+					m_line_comp_img_path = makepathString(tempName + "\\sub\\comp_pict.jpg",compImg);
 					m_line_comp_img_pathOut.write();
 
 					//UIからのクリックを受け取った場合
@@ -530,8 +546,8 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 
 							}else{
 								//ラインマップの書き出し先を作成
-								str_line << tempName; str_line << "\\LineMapCordinate"; str_line << send_pict;
-								str_img << tempName; str_img << "\\LineMapImage"; str_img << send_pict; str_img<<".jpg";
+								str_line << tempName; str_line << "\\sub\\LineMapCordinate"; str_line << send_pict;
+								str_img << tempName; str_img << "\\sub\\LineMapImage"; str_img << send_pict; str_img<<".jpg";
 							}
 							//結果のラインマップのvector<vector<Point>>を保存先に書き出し
 							writeLineMapData(str_line.str(),map_line);
@@ -565,8 +581,8 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 
 							}else{
 								//ラインマップの書き出し先を作成
-								str_line << tempName; str_line << "\\LineMapCordinate"; str_line << send_pict;
-								str_img << tempName; str_img << "\\LineMapImage"; str_img << send_pict; str_img << ".jpg";
+								str_line << tempName; str_line << "\\sub\\LineMapCordinate"; str_line << send_pict;
+								str_img << tempName; str_img << "\\sub\\LineMapImage"; str_img << send_pict; str_img << ".jpg";
 							}
 							//結果のラインマップのvector<vector<Point>>を保存先に書き出し
 							writeLineMapData(str_line.str(),map_line);
@@ -582,7 +598,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 							if(full_comp_flag){
 								convert_line_map_flag = true;
 							}else{
-								cout<<"Non Comp LineMaps"<<endl;
+								cout<<"mapsManager : Non Comp LineMaps"<<endl;
 							}
 						}
 					}
@@ -598,6 +614,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 			m_line_maps_path.data = out_path.str().c_str();
 			setTimestamp(m_line_maps_path);
 			m_line_maps_pathOut.write();
+
 		}
 	}
 
@@ -665,19 +682,6 @@ extern "C"
   }
   
 };
-
-
-/**
- * 引数分wait処理を行う
- *
- * @para int tm		for文の最大値
- * @return void
- */
-void wait(int tm_i,int tm_j){
-	for( int i = 0 ; i < tm_i ; i++ ){
-		for( int j = 0 ; j < tm_j ; j++ );
-	}
-}
 
 /**
  * CameraImage型のデータをMat型に変換する
@@ -777,12 +781,13 @@ bool equalCamImg(CameraImage src_img,CameraImage rec_img){
 TimedString makepathString(String str,CameraImage src){
 	TimedString ts;
 
+	setTimestamp(ts);
+
 	//処理する画像をtemp領域に保存
 	imwrite(str,CamToMat(src));
 
 	//保存場所の絶対パスをTimedStringにコピー
 	ts.data = str.c_str();
-	ts.tm = src.tm;
 
 	return ts;
 }
@@ -883,3 +888,4 @@ void writeLineMapData(string str,vector<vector<Point> > &vvp){
 		ofs << vp_str.str() << endl;
 	}
 }
+

@@ -134,7 +134,7 @@ public class ThreeDimensionViewerImpl extends DataFlowComponentBase {
      */
     @Override
     protected ReturnCode_t onActivated(int ec_id) {
-        System.out.println("onActivatedStart");
+        System.out.println("3DViewer : onActivated : START");
  //   	while(m_lineMapsPathIn.isNew())m_lineMapsPathIn.read();
     	
 		frame = new ThreeDimensionViewerFrame();
@@ -157,7 +157,7 @@ public class ThreeDimensionViewerImpl extends DataFlowComponentBase {
     	model_path.data = "";
 
     	
-        System.out.println("onActivatedEnd");    	
+        System.out.println("3DViewer : onActivated : END");
         return super.onActivated(ec_id);
     }
 
@@ -175,12 +175,13 @@ public class ThreeDimensionViewerImpl extends DataFlowComponentBase {
      */
     @Override
     protected ReturnCode_t onDeactivated(int ec_id) {
-        System.out.println("onDeactivatedStart");
+        System.out.println("3DViewer : onDeactivated : START");
     	
     	frame.setVisible(false);
+    	frame.removeAll();
     	frame = null;
 
-        System.out.println("onDeactivatedEnd");
+        System.out.println("3DViewer : onDeactivated : END");
         return super.onDeactivated(ec_id);
     }
 
@@ -198,7 +199,6 @@ public class ThreeDimensionViewerImpl extends DataFlowComponentBase {
      */
     @Override
     protected ReturnCode_t onExecute(int ec_id) {
-//        System.out.println("onExecuteStart");
     	
     	//入力ポートにファイルパスを受け取った場合
     	if(m_lineMapsPathIn.isNew()){
@@ -220,7 +220,9 @@ public class ThreeDimensionViewerImpl extends DataFlowComponentBase {
     		}
     	}
 
-//        System.out.println("onExecuteEnd");
+    	Runtime rt = Runtime.getRuntime();
+    	rt.gc();
+    	
         return super.onExecute(ec_id);
     }
 
@@ -270,10 +272,13 @@ public class ThreeDimensionViewerImpl extends DataFlowComponentBase {
      */
     @Override
     protected ReturnCode_t onReset(int ec_id) {
+    	System.out.println("3DViewer : onReset : START");
 
     	frame.setVisible(false);
+    	frame.removeAll();    	
     	frame = null;
-    	    	
+
+    	System.out.println("3DViewer : onReset : END");    	
         return super.onReset(ec_id);
     }
 

@@ -19,7 +19,7 @@ using namespace cv;
 using namespace std;
 
 //文字列の分割を行う
-vector<string> split(const string &str, char delim);
+vector<string> split(const string str, char delim);
 //Mat型のデータをCameraImage型に変換する
 CameraImage MatToCam(Mat &mat_img);
 //CameraImage型のデータをMat型に変換する
@@ -135,7 +135,7 @@ RTC::ReturnCode_t OpenPicts::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t OpenPicts::onActivated(RTC::UniqueId ec_id)
 {
-	cout<<"onActivated : START"<<endl;
+	cout<<"OpenPicts : onActivated : START"<<endl;
 
 
 	/*--------------パラメータの初期化--------------*/
@@ -155,7 +155,7 @@ RTC::ReturnCode_t OpenPicts::onActivated(RTC::UniqueId ec_id)
 	send_flag = false;
 	send_loop = true;
 
-	cout<<"onActivated : SUCCESS"<<endl;
+	cout<<"OpenPicts : onActivated : END"<<endl;
 
   return RTC::RTC_OK;
 }
@@ -166,11 +166,8 @@ RTC::ReturnCode_t OpenPicts::onActivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t OpenPicts::onDeactivated(RTC::UniqueId ec_id)
 {
-	cout<<"onDeactivated : START"<<endl;
 
-	destroyWindow("OpenImage");
-
-	cout<<"onDeactivated : SUCCESS"<<endl;
+	destroyWindow("OpenPicts : OpenImage");
 
   return RTC::RTC_OK;
 }
@@ -183,7 +180,7 @@ RTC::ReturnCode_t OpenPicts::onExecute(RTC::UniqueId ec_id)
 {
 
 	if(onExStartFlag == false){
-		cout<<"onExecute : START"<<endl;
+		cout<<"OpenPicts : onExecute : START"<<endl;
 		onExStartFlag = true;
 	}
 
@@ -224,7 +221,7 @@ RTC::ReturnCode_t OpenPicts::onExecute(RTC::UniqueId ec_id)
 		//コンフィギュレーションパラメータのStriangを読み込み、1ファイル単位に分割
 		vector<string> file_name = split(FN,',');
 		for( vector<string>::iterator it = file_name.begin(); it != file_name.end(); ++it ){
-			cout<<"Try Open:"<<*it<<endl;
+			cout<<"OpenPicts : Try Open:"<<*it<<endl;
 
 			string str = *it;
 			Mat p_img;
@@ -232,7 +229,7 @@ RTC::ReturnCode_t OpenPicts::onExecute(RTC::UniqueId ec_id)
 			//画像の読み込み
 			p_img = imread(*it);
 			if( p_img.empty() ){
-				cout<<"Cannot Open:"<<*it<<endl;
+				cout<<"OpenPicts : Cannot Open:"<<*it<<endl;
 				continue;	//ファイル読み込みに失敗した場合、vectorの次要素へ
 			}
 
@@ -242,7 +239,7 @@ RTC::ReturnCode_t OpenPicts::onExecute(RTC::UniqueId ec_id)
 
 			out_datas.push_back( cam_img );	//vectorに保存
 
-			cout<<"SUCCESS : "<<*it
+			cout<<"OpenPicts : SUCCESS : "<<*it
 				<<"\ntm.sec : "<<cam_img.tm.sec
 				<<"\ntm.nsec : "<<cam_img.tm.nsec
 				<<"\nheight : "<<cam_img.height
@@ -257,33 +254,33 @@ RTC::ReturnCode_t OpenPicts::onExecute(RTC::UniqueId ec_id)
 			if(!m_rec_cam_imgIn.isNew())break;
 			else m_rec_cam_imgIn.read();
 		}
-		cout<<"Output START"<<endl;
+		cout<<"OpenPicts : Output START"<<endl;
 	}
 
 	//読み込んだ画像が1枚以上ある場合
 	if(out_datas.size() != 0 && send_loop == true){
 
 		if(send_flag == false){
-			cout<<"SendImage"<<endl;
+			cout<<"OpenPicts : SendImage"<<endl;
 			m_send_cam_img = *pict_it;
 			m_send_cam_imgOut.write();
 			send_flag = true;
 
 			if(m_img_view == "ON"){
-				namedWindow("OpenImage",1);
-				imshow("OpenImage",CamToMat(m_send_cam_img));
+				namedWindow("OpenPicts : OpenImage",1);
+				imshow("OpenPicts : OpenImage",CamToMat(m_send_cam_img));
 			}else{
-				destroyWindow("OpenImage");
+				destroyWindow("OpenPicts : OpenImage");
 			}
 
 		}else{
 			if(m_rec_cam_imgIn.isNew()){
-				cout<<"ReadImage"<<endl;
+				cout<<"OpenPicts : ReadImage"<<endl;
 				m_rec_cam_imgIn.read();
 
 				if(m_rec_cam_img.tm.sec == m_send_cam_img.tm.sec
 					&& m_rec_cam_img.tm.nsec == m_send_cam_img.tm.nsec){
-						cout<<"ReceiveImage"<<endl;
+						cout<<"OpenPicts : ReceiveImage"<<endl;
 						send_flag = false;
 						pict_it++;
 						if(pict_it == out_datas.end()){
@@ -291,7 +288,7 @@ RTC::ReturnCode_t OpenPicts::onExecute(RTC::UniqueId ec_id)
 							setTimestamp(m_send_flag);
 							m_send_flagOut.write();
 							send_loop = false;
-							cout<<"SendFIN"<<endl;
+							cout<<"OpenPicts : SendFIN"<<endl;
 						}
 				}
 			}
@@ -324,7 +321,7 @@ RTC::ReturnCode_t OpenPicts::onError(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t OpenPicts::onReset(RTC::UniqueId ec_id)
 {
-	destroyWindow("OpenImage");
+	destroyWindow("OpenPicts : OpenImage");
 
   return RTC::RTC_OK;
 }
@@ -364,7 +361,7 @@ extern "C"
 * @para char delim			分割のサインとなる文字
 * @return vector<string>	分割結果の文字列のvector
 */
-vector<string> split(const string &str, char delim){
+vector<string> split(const string str, char delim){
 	vector<string> res;
 	size_t current = 0, found;
 	while((found = str.find_first_of(delim, current)) != string::npos){

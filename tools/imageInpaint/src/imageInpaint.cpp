@@ -49,7 +49,7 @@ static const char* imageinpaint_spec[] =
     "implementation_id", "imageInpaint",
     "type_name",         "imageInpaint",
     "description",       "輪郭情報を用いた画像修復を行う",
-    "version",           "1.1.0",
+    "version",           "1.2.0",
     "vendor",            "Masaru Tatekawa(SIT)",
     "category",          "UI",
     "activity_type",     "PERIODIC",
@@ -58,7 +58,7 @@ static const char* imageinpaint_spec[] =
     "language",          "C++",
     "lang_type",         "compile",
     // Configuration variables
-    "conf.default.01_contoursType", "Rectangle",
+    "conf.default.01_contoursType", "Convex",
     "conf.default.02_MaskDataSelect", "Image",
     "conf.default.03_MaskTypeSelect", "All",
     // Widget
@@ -138,7 +138,7 @@ RTC::ReturnCode_t imageInpaint::onInitialize()
 
   // <rtc-template block="bind_config">
   // Bind variables and configuration variable
-  bindParameter("01_contoursType", m_cont_type, "Rectangle");
+  bindParameter("01_contoursType", m_cont_type, "Convex");
   bindParameter("02_MaskDataSelect", m_mask_select, "Image");
   bindParameter("03_MaskTypeSelect", m_mask_type, "All");
   // </rtc-template>
@@ -173,12 +173,13 @@ RTC::ReturnCode_t imageInpaint::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t imageInpaint::onActivated(RTC::UniqueId ec_id)
 {
+	cout<<"imageInpaint : onActivated : START"<<endl;
 	//temp領域のパスを読み込む
 	if(m_temp_pathIn.isNew()){
 		m_temp_pathIn.read();
 		tempName = m_temp_path.data;
 	}else{
-		tempName = "C:\\tmp\\sub";
+		tempName = "C:\\tmp\\makeMapsModel";
 	}
 
 	/*--------------パラメータの初期化--------------*/
@@ -223,6 +224,7 @@ RTC::ReturnCode_t imageInpaint::onActivated(RTC::UniqueId ec_id)
 	inpt_it_rect = cont_rect.begin();
 	inpt_it_convex = cont_convex.begin();
 
+	cout<<"imageInpaint : onActivated : END"<<endl;
   return RTC::RTC_OK;
 }
 
@@ -254,7 +256,7 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 
 		//すでに受け取っている画像と違う画像な場合
 		if(!equalCamImg(old_img,m_src_img)){
-			cout<<"changeImg"<<endl;
+			cout<<"imageInpaint : changeImg"<<endl;
 
 			src_cam_img = old_img;
 
@@ -278,7 +280,7 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 
 		//長方形データ群が更新された場合
 		if(!equalTimedShortSeq(old_cont_rect,m_cont_rect)){
-			cout<<"changeRect"<<endl;
+			cout<<"imageInpaint : changeRect"<<endl;
 
 			//保持してあった長方形データを削除
 			cont_rect.clear();
@@ -298,7 +300,7 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 
 		//凸図形データ群が更新された場合
 		if(!equalTimedShortSeq(old_cont_convex,m_cont_convex)){
-			cout<<"changeConvex"<<endl;
+			cout<<"imageInpaint : changeConvex"<<endl;
 			//保持してあった凸図形データを削除
 			cont_convex.clear();
 			//受け取ったTimedShortSeqをvector<vector<Point>>型に変換
@@ -355,7 +357,7 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 
 		//処理する画像をtemp領域に保存
 		//保存場所の絶対パスをOutPortにコピー
-		m_modi_img_path = makepathString(tempName + "\\contours_draw_img.jpg",MatToCam(src_gray_copy_img));
+		m_modi_img_path = makepathString(tempName + "\\sub\\contours_draw_img.jpg",MatToCam(src_gray_copy_img));
 		m_modi_img_pathOut.write();
 
  
@@ -464,7 +466,7 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 					}
 				}
 
-				cout<<"ModifyFIN"<<endl;
+				cout<<"imageInpaint : ModifyFIN"<<endl;
 
 				break;
 
@@ -504,7 +506,7 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 
 			//処理する画像をtemp領域に保存
 			//保存場所の絶対パスをOutPortにコピー
-			m_modi_img_path = makepathString(tempName + "\\contours_draw_img.jpg",MatToCam(src_gray_copy_img));
+			m_modi_img_path = makepathString(tempName + "\\sub\\contours_draw_img.jpg",MatToCam(src_gray_copy_img));
 			m_modi_img_pathOut.write();
  
 			//輪郭描画後の画像をOutPortにコピー
@@ -520,7 +522,7 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 
 		//修復したい画像と修復領域をOutPortに送る
 		if(write_data_flag == true){
-			cout<<"SendInpaint"<<endl;
+			cout<<"imageInpaint : SendInpaint"<<endl;
 
 			//修復基画像の作成
 			setTimestamp(inpt_cam_img);
@@ -587,14 +589,14 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 				//受け取った修復画像が送った画像と一致したタイムスタンプを持っている場合
 				if(m_inpt_src_img.tm.sec == m_inpt_img.tm.sec 
 					&& m_inpt_src_img.tm.nsec == m_inpt_img.tm.nsec){
-					cout<<"ReceiveInpaint"<<endl;
+					cout<<"imageInpaint : ReceiveInpaint"<<endl;
 
 					//修復基画像を保持する変数に受け取った画像を上書き
 					inpt_cam_img = m_inpt_img;
 
 					//処理する画像をtemp領域に保存
 					//保存場所の絶対パスをOutPortにコピー
-					m_modi_img_path = makepathString(tempName + "\\inpt_img.jpg",inpt_cam_img);
+					m_modi_img_path = makepathString(tempName + "\\sub\\inpt_img.jpg",inpt_cam_img);
 					m_modi_img_pathOut.write();
  
 					//処理中画像をOutPortにコピー
@@ -656,6 +658,14 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 				break;
 			}
 
+			//リセットデータの更新が押されたことを表すフラグ
+			case 9:
+				//現在画像を、inpaint基画像変数に上書き
+				reset_inpt_img = inpt_cam_img;
+				write_data_flag = true;
+				break;
+
+
 			//リセットボタンが押されたことを表すフラグ
 			case 4:{
 				//未処理のinpaint基画像を、現在の画像に上書き
@@ -670,7 +680,7 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 				//輪郭修正が終了したフラグを立てる
 				inpaint_modify_flag = true;
 
-				cout<<"ModifyFIN"<<endl;
+				cout<<"imageInpaint : ModifyFIN"<<endl;
 
 				break;
 			default :
@@ -691,7 +701,7 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 
 				//修復したい画像と修復領域をOutPortに送る
 				if(write_data_flag == true){
-					cout<<"SendInpaint"<<endl;
+					cout<<"imageInpaint : SendInpaint"<<endl;
 
 					//修復基画像の作成
 					setTimestamp(inpt_cam_img);
@@ -716,7 +726,7 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 
 			//処理する画像をtemp領域に保存
 			//保存場所の絶対パスをOutPortにコピー
-			m_modi_img_path = makepathString(tempName + "\\inpt_img.jpg",inpt_cam_img);
+			m_modi_img_path = makepathString(tempName + "\\sub\\inpt_img.jpg",inpt_cam_img);
 			m_modi_img_pathOut.write();
 
 			//処理中画像をOutPortにコピー
@@ -730,14 +740,14 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 			//受け取った修復画像が送った画像と一致したタイムスタンプを持っている場合
 			if(m_inpt_src_img.tm.sec == m_inpt_img.tm.sec 
 				&& m_inpt_src_img.tm.nsec == m_inpt_img.tm.nsec){
-				cout<<"ReceiveInpaint"<<endl;
+				cout<<"imageInpaint : ReceiveInpaint"<<endl;
 
 				//修復基画像を保持する変数に受け取った画像を上書き
 				inpt_cam_img = m_inpt_img;
 
 				//処理する画像をtemp領域に保存
 				//保存場所の絶対パスをOutPortにコピー
-				m_modi_img_path = makepathString(tempName + "\\inpt_img.jpg",inpt_cam_img);
+				m_modi_img_path = makepathString(tempName + "\\sub\\inpt_img.jpg",inpt_cam_img);
 				m_modi_img_pathOut.write();
  
 				//処理中画像をOutPortにコピー
@@ -760,7 +770,6 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 
 		m_proc_imgOut.write();
 	}		
-
 
   return RTC::RTC_OK;
 }
@@ -816,6 +825,7 @@ extern "C"
   }
   
 };
+
 
 
 /**
@@ -1070,10 +1080,10 @@ bool eraceClickRect(Mat img,vector<vector<Point>> &cont,Point3D p){
 			Point pp = *it;
 			str << "("; str << pp.x; str << ","; str << pp.y; str << ") ";
 		}
-		cout<<"EraseConvex:"<<str.str()<<endl;
+		cout<<"imageInpaint : EraseConvex:"<<str.str()<<endl;
 		cont.erase(min_it);
 	}else{
-		cout<<"ErasePoint:NON"<<endl;
+		cout<<"imageInpaint : ErasePoint:NON"<<endl;
 	}
 
 	return it_flag;
@@ -1137,12 +1147,13 @@ void eraceDraggedRect(vector<vector<Point>> &cont,Rect dr){
 TimedString makepathString(String str,CameraImage src){
 	TimedString ts;
 
+	setTimestamp(ts);
+
 	//処理する画像をtemp領域に保存
 	imwrite(str,CamToMat(src));
 
 	//保存場所の絶対パスをTimedStringにコピー
 	ts.data = str.c_str();
-	ts.tm = src.tm;
 
 	return ts;
 }

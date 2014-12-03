@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):UI:imageInpaint:1.1.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="imageInpaint" rtc:updateDate="2014-10-30T22:37:03.761+09:00" rtc:creationDate="2014-10-30T17:22:25+09:00" rtc:version="1.1.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="輪郭情報を用いた画像修復を行う" rtc:category="UI" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="imageInpaint">
+<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):UI:imageInpaint:1.2.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="imageInpaint" rtc:updateDate="2014-11-28T11:06:08.474+09:00" rtc:creationDate="2014-10-30T17:22:25+09:00" rtc:version="1.2.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="輪郭情報を用いた画像修復を行う" rtc:category="UI" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="imageInpaint">
         <rtcDoc:Doc rtcDoc:reference="" rtcDoc:license="" rtcDoc:creator="立川将(Tatekawa Masaru)&lt;br/&gt;Email:y09148@shibaura-it.ac.jp" rtcDoc:algorithm="入力画像と入力輪郭データを用いて修復処理を行い、結果を出力する&lt;br/&gt;輪郭データに対するUIを用いての修正処理、輪郭データを用いての自動修復処理、UIを用いての手動による修復処理の順で進む" rtcDoc:inout="入力&lt;br/&gt;tempFolderPath[TimedString] - 画像情報送信に用いる一時保存領域のパス&lt;br/&gt;srcImage[CameraImage] - 修復処理を行いたい画像データ&lt;br/&gt;contoursRectangles[TimedShortSeq] - 輪郭点群がベースとなっている輪郭長方形データ群&lt;br/&gt;contoursConvex[TimedShortSeq] - 輪郭点群がベースとなっている輪郭凸図形データ群&lt;br/&gt;clickPoint[TimedPoint3D] - UIコンポーネントとクリック情報&lt;br/&gt;draggedRect[TimedShortSeq] - ドラッグされて生成された長方形情報&lt;br/&gt;inpaintImage[CameraImage] - 修復処理の実行結果となる画像&lt;br/&gt;&lt;br/&gt;出力&lt;br/&gt;modifyImage[CameraImage] - UIコンポーネントへ表示する画像&lt;br/&gt;modifyImagePath[TimedString] - 及び画像の保存アドレスのパス&lt;br/&gt;inpaintSrcImage[CameraImage] - 修復処理のベース画像&lt;br/&gt;inpaintMaskImage[CameraImage] - 修復に用いるマスク画像&lt;br/&gt;inpaintMaskArea[TimedShortSeq] - マスク画像作成に用いる長方形データ&lt;br/&gt;processedImage[CameraImage] - 全ての処理が終わった結果の画像" rtcDoc:description="入力ポートから受け取った輪郭点データ群の情報を用いて画像修復を行うコンポーネント&lt;br/&gt;受け取った輪郭点データ群に対し、UIコンポーネントを用いて削除等の操作を行うことができる&lt;br/&gt;また、修復に対しても、UIコンポーネントでのドラッグ入力をマスクイメージとして修復処理コンポーネント(CVInpaint)に送ることで、容易に指定領域の画像修復を行うことができます。"/>
+        <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
         <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
     </rtc:BasicInfo>
     <rtc:Actions>
@@ -29,7 +30,7 @@
         <rtc:OnModeChanged xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
     </rtc:Actions>
     <rtc:ConfigurationSet>
-        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="cont_type" rtc:unit="" rtc:defaultValue="Rectangle" rtc:type="string" rtc:name="01_contoursType">
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="cont_type" rtc:unit="" rtc:defaultValue="Convex" rtc:type="string" rtc:name="01_contoursType">
             <rtc:Constraint>
                 <rtc:ConstraintUnitType>
                     <rtc:Or>
@@ -50,7 +51,7 @@
                     </rtc:Or>
                 </rtc:ConstraintUnitType>
             </rtc:Constraint>
-            <rtcDoc:Doc rtcDoc:constraint="Rectangle - 輪郭点データを長方形データに変換したデータ群を用いて処理を進める&lt;br/&gt;Convex - 輪郭点データを凸図形データに変換したデータ群を用いて処理を進める" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="処理に用いる輪郭データタイプを選ぶ&lt;br/&gt;両方の形式のデータをポートから受け取っている場合に用いる" rtcDoc:defaultValue="Rectangle" rtcDoc:dataname="string"/>
+            <rtcDoc:Doc rtcDoc:constraint="Rectangle - 輪郭点データを長方形データに変換したデータ群を用いて処理を進める&lt;br/&gt;Convex - 輪郭点データを凸図形データに変換したデータ群を用いて処理を進める" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="処理に用いる輪郭データタイプを選ぶ&lt;br/&gt;両方の形式のデータをポートから受け取っている場合に用いる" rtcDoc:defaultValue="Convex" rtcDoc:dataname="string"/>
             <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
         </rtc:Configuration>
         <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="mask_select" rtc:unit="" rtc:defaultValue="Image" rtc:type="string" rtc:name="02_MaskDataSelect">

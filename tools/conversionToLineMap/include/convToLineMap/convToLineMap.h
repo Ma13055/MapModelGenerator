@@ -258,14 +258,26 @@ class convToLineMap
   /*!
    * 輪郭データ群に対するユーザからの操作の種類を選択する
    * - Name: string modi_type
-   * - DefaultValue: erase
-   * - Constraint: erase -
-   *               クリックされた一番近い凸図形頂点を、輪郭データ群
-   *               から消す
+   * - DefaultValue: defrag
+   * - Constraint: defrag -
+   *               クリックされた図形の頂点で、重なっている部分を削
+   *               除する
+   *               eraseFigure -
+   *               クリックされた座標を含む図形の中から、一番小さい
+   *               図形を削除する　ドラッグされた範囲の中に全頂点が
+   *               含まれる図形を削除する
+   *               erasePoint -
+   *               クリックされた座標から一番近い頂点を削除する　ド
+   *               ラッグされた範囲に含まれる頂点をすべて削除する
    *               add -
    *               クリック操作によって隣り合う凸図形頂点を選択して
    *               もらい、その二つの頂点の間に新たに頂点を追加する
    *               追加する頂点は特徴点の中から選択する
+   *               ドラッグされて形成された矩形を輪郭図形として加え
+   *               る
+   *               movePoint -
+   *               クリックで選択された頂点座標を、次にクリックされ
+   *               た特徴点の座標に書き換える
    */
   std::string m_modi_type;
   /*!
@@ -276,6 +288,14 @@ class convToLineMap
    * - Range: x>=0
    */
   double m_threshold;
+  /*!
+   * 輪郭図形の内部を塗りつぶすかどうかを選択する変数
+   * - Name: string region_fill
+   * - DefaultValue: ON
+   * - Constraint: ON - 塗りつぶす
+   *               OFF - 塗りつぶさない
+   */
+  std::string m_region_fill;
 
   // </rtc-template>
 
@@ -433,10 +453,14 @@ class convToLineMap
 
  private:
   // <rtc-template block="private_attribute">
-   	string tempName;
+	/*--------------ポート更新比較変数------------*/
+	string tempName;
 
 	TimedShortSeq old_cont_data;
 	TimedFloatSeq old_feature_points;
+	CameraImage old_img;
+
+	/*---------輪郭データ変数及びUI用変数---------*/
 
 	vector<vector<Point> > cont_data;			//輪郭点データ
 	vector<vector<Point> > line_base;
@@ -446,8 +470,8 @@ class convToLineMap
 //	vector<KeyPoint> keypoints;		//特徴点が入る変数
 	vector<Point> keypoints;		//特徴点が入る変数
 
-	CameraImage src_cam_img;
-	CameraImage old_img;
+	CameraImage src_cam_img;	//受け取ったsrcImage
+
 
 	Mat gray_img;
 	Mat gray_color_img;
@@ -460,13 +484,16 @@ class convToLineMap
 	bool contours_modify_flag;
 	bool contours_click_erase_flag;
 
-	int click_step;
+	int add_click_step;
+	int move_click_step;
 
 	Point click_cont_point;
 	Point back_cont_point;
 	Point next_cont_point;
 	Point second_cont_point;
 	Point click_feature_point;
+
+	string old_region_fill;
   
   // </rtc-template>
 

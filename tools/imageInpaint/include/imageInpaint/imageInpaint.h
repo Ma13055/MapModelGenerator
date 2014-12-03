@@ -24,7 +24,6 @@
 #include "opencv2\core\core.hpp"
 #include "opencv2\highgui\highgui.hpp"
 
-
 // Service implementation headers
 // <rtc-template block="service_impl_h">
 
@@ -272,7 +271,7 @@ class imageInpaint
    * 処理に用いる輪郭データタイプを選ぶ
    * 両方の形式のデータをポートから受け取っている場合に用いる
    * - Name: string cont_type
-   * - DefaultValue: Rectangle
+   * - DefaultValue: Convex
    * - Constraint: Rectangle -
    *               輪郭点データを長方形データに変換したデータ群を用
    *               いて処理を進める
@@ -506,7 +505,6 @@ class imageInpaint
 	bool write_data_flag;
 	vector<Rect>::iterator inpt_it_rect;
 	vector<vector<Point>>::iterator inpt_it_convex;
-  
 
   // </rtc-template>
 

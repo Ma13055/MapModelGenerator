@@ -213,11 +213,15 @@ public class controlPanelImpl extends DataFlowComponentBase {
 		defo_img = null;
 		modify_img = null;
 		
-		File newdir = new File("c:\\tmp\\sub");
+		File newdir = new File("c:\\tmp");
 		newdir.mkdir();
-		newdir = new File("c:\\temp\\maps");
+		newdir = new File("C:\\tmp\\makeMapsModel");
 		newdir.mkdir();
-		newdir = new File("c:\\temp\\maps\\linemaps");
+		newdir = new File("C:\\tmp\\makeMapsModel\\sub");
+		newdir.mkdir();
+		newdir = new File("C:\\tmp\\makeMapsModel\\maps");
+		newdir.mkdir();
+		newdir = new File("C:\\tmp\\makeMapsModel\\maps\\linemaps");
 		newdir.mkdir();
 		
         return super.onActivated(ec_id);
@@ -239,10 +243,12 @@ public class controlPanelImpl extends DataFlowComponentBase {
     protected ReturnCode_t onDeactivated(int ec_id) {
     	
     	frame.setVisible(false);
+    	frame.removeAll();
     	frame = null;
     	defo_img = null;
     	modify_img = null;
-    	
+    	Runtime rt = Runtime.getRuntime();
+    	rt.gc();
         return super.onDeactivated(ec_id);
     }
 
@@ -279,18 +285,18 @@ public class controlPanelImpl extends DataFlowComponentBase {
 
     	if(m_srcImagePathIn.isNew()){
     		m_srcImagePathIn.read();
-    		defo_img = readPass(m_src_img_path.v.data);
+    		defo_img = readPath(m_src_img_path.v);
     	}
     	
     	if(m_modifyImagePathIn.isNew()){
     		m_modifyImagePathIn.read();
-    		modify_img = readPass(m_modi_img_path.v.data);
+    		modify_img = readPath(m_modi_img_path.v);
     		frame.modify.setSelected(true);
     	}
     	
     	if(m_completeImagePathIn.isNew()){
     		m_completeImagePathIn.read();
-    		comp_img = readPass(m_comp_img_path.v.data);
+    		comp_img = readPath(m_comp_img_path.v);
     		frame.comp.setSelected(true);
     	}
     	
@@ -320,24 +326,24 @@ public class controlPanelImpl extends DataFlowComponentBase {
 
     	
     	switch(frame.getMouseFlag()){
-    	case 0:break;
-    	case 2:
-    		
-    		Rectangle sub_dragged_rect = frame.getDraggRectangle();
-    		short[] sub_short_seq = {(short)sub_dragged_rect.x,(short)sub_dragged_rect.y,(short)sub_dragged_rect.width,(short)sub_dragged_rect.height};
-    		TimedShortSeq sub_rectangle = new TimedShortSeq(tm,sub_short_seq);
-    		m_dragRectangleOut.write(sub_rectangle);
-    		    		
-    	default:
-    		
-    		Point sub_click_p = frame.getClickPoint();
-    		Point3D sub_p3D = new Point3D(sub_click_p.x,sub_click_p.y,frame.getMouseFlag());
-    		TimedPoint3D sub_point3D = new TimedPoint3D(tm,sub_p3D);
-    		m_clickPointOut.write(sub_point3D);
-    		
-    		frame.resetMouseFlag();
-    		break;
-
+	    	case 0:break;
+	    	case 2:{
+	    		
+	    		Rectangle sub_dragged_rect = frame.getDraggRectangle();
+	    		short[] sub_short_seq = {(short)sub_dragged_rect.x,(short)sub_dragged_rect.y,(short)sub_dragged_rect.width,(short)sub_dragged_rect.height};
+	    		TimedShortSeq sub_rectangle = new TimedShortSeq(tm,sub_short_seq);
+	    		m_dragRectangleOut.write(sub_rectangle);
+	    	}	    		
+	    	default:{
+	    		
+	    		Point sub_click_p = frame.getClickPoint();
+	    		Point3D sub_p3D = new Point3D(sub_click_p.x,sub_click_p.y,frame.getMouseFlag());
+	    		TimedPoint3D sub_point3D = new TimedPoint3D(tm,sub_p3D);
+	    		m_clickPointOut.write(sub_point3D);
+	    		
+	    		frame.resetMouseFlag();
+	    		break;
+	    	}
     	}
     	
     	String file_name = frame.getFileName();
@@ -348,6 +354,8 @@ public class controlPanelImpl extends DataFlowComponentBase {
     	TimedString folderName = new TimedString(tm,folder_name);
     	m_tempFolderPathOut.write(folderName);
     	
+    	Runtime rt = Runtime.getRuntime();
+    	rt.gc();
         return super.onExecute(ec_id);
     }
 
@@ -399,10 +407,12 @@ public class controlPanelImpl extends DataFlowComponentBase {
     protected ReturnCode_t onReset(int ec_id) {
 
     	frame.setVisible(false);
+    	frame.removeAll();
     	frame = null;
     	defo_img = null;
     	modify_img = null;
-    	
+    	Runtime rt = Runtime.getRuntime();
+    	rt.gc();
         return super.onReset(ec_id);
     }
 
@@ -593,21 +603,24 @@ public class controlPanelImpl extends DataFlowComponentBase {
 		}
 		return img;
 	}
-	
-	private BufferedImage readPass(String pass){
-		BufferedImage readImage = null;
-	
-		for(int i=0;i<1000;i++){
+		
+	private BufferedImage readPath(TimedString path){
+		long pathTime = ((long)path.tm.sec)*1000+((long)path.tm.nsec/1000000);
+		while(true){
 			try {
-				readImage = ImageIO.read(new File(pass));
-				break;
+				BufferedImage readImage = null;
+
+				File data = new File(path.data);
+				if(pathTime < data.lastModified()){
+					readImage = ImageIO.read(data);
+				}else{
+					continue;
+				}
+				return readImage;
 			} catch (Exception e) {
-//				e.printStackTrace();
 				continue;
 			}
 		}
-		
-		return readImage;
 	}
 
 }

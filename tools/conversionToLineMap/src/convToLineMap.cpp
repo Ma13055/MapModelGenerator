@@ -19,54 +19,93 @@
 using namespace std;
 using namespace cv;
 
+
 //CameraImage型のデータをMat型に変換する
-Mat CamToMat(CameraImage &m_rec_img);
+Mat CamToMat(CameraImage &cam_img);
+
 //Mat型のデータをCameraImage型に変換する
 CameraImage MatToCam(Mat &mat_img);
+
 //CameraImage型のデータを初期化する
 CameraImage makeEmptyCamImg();
-//CameraImage型の比較を行う
+
+//CameraImage型の二つのデータを比較
 bool equalCamImg(CameraImage &src_img,CameraImage &rec_img);
+
 //TimedShortSeq型のデータ二つを比較する
 bool equalTimedShortSeq(TimedShortSeq &src,TimedShortSeq &rec);
+
 //TimedFloatSeq型のデータ二つを比較する
 bool equalTimedFloatSeq(TimedFloatSeq &src,TimedFloatSeq &rec);
+
 //輪郭点データ群を画像に描画する
-void drawContoursImage(vector<vector<Point> > cont,Mat &src_img);
-//特徴点データ群を画像に描画する
-void drawFeaturePoint(vector<Point> keypoints,Mat &src_img);
-//与えられた座標が指す輪郭点データを削除する
-bool eraceClickRect(Mat img,vector<vector<Point>> &cont,Point3D p);
-//ドラッグによって形成された長方形の中に存在する輪郭点データを削除する
-void eraceDraggedRect(vector<vector<Point>> &cont,Rect dragged_rect);
-//画像の保存を行い、そのパスを返す
-TimedString makepathString(String str,CameraImage src);
-//与えられた点に対して、一番近い特徴点の座標を取得する
-Point getNearFeaturePoint(Mat img,vector<Point> &fear,Point p);
-//与えられた点に対して、一番近い凸図形頂点のiteratorを取得する
+void drawContoursImage(vector<vector<Point> > cont,Mat &src_img,Scalar color,String region_fill);
+
+//点群データ群を画像に描画する
+void drawContPointImage(vector<vector<Point> > vvp,Mat &src_img);
+
+//点データ群を画像に描画する
+void drawPointVector(vector<Point> vp,Mat &src_img,Scalar c);
+
+//与えられた座標が指す図形の輪郭点データを削除する
+bool eraseClickRect(Mat img,vector<vector<Point>> &cont,Point3D p);
+
+//与えられた座標が指す図形の輪郭点データを最適化する
+bool defragClickRect(Mat img,vector<vector<Point>> &cont,Point3D p);
+
+//ドラッグによって形成された矩形の中に存在する輪郭図形データを削除する
+void eraseDraggedRect(vector<vector<Point>> &cont,Rect dr);
+
+//ドラッグによって形成された矩形の中に存在する輪郭点データを削除する
+void eraseDraggedPoint(vector<vector<Point>> &cont,Rect dr);
+
+//ドラッグによって形成された長方形のを図形輪郭点データ群に追加する
+void addDraggedRect(vector<vector<Point>> &cont,Rect dr);
+
+//画像の保存を行いそのパスを返す
+TimedString makePathString(String str,CameraImage src);
+
+//与えられた点に対して、点データ群の中から一番近い点の座標を取得する
+Point getNearPoint(Mat img,vector<Point> &vp,Point p);
+
+//与えられた点に対して、一番近い図形頂点のiteratorを取得する
 bool getNearConvexPoint(Mat img,vector<vector<Point> > &conv,Point p,vector<vector<Point> >::iterator &c_it,vector<Point>::iterator &p_it);
-//与えられた凸図形データ群からiteratorの指す要素を削除する
-void eraseConvexPoint(vector<vector<Point> > &conv,vector<vector<Point> >::iterator &c_it,vector<Point>::iterator &p_it);
-//与えられた凸図形データ群からiteratorの指す要素の中身を返す
-Point getConvexPoint(vector<vector<Point> > &conv,vector<vector<Point> >::iterator &c_it,vector<Point>::iterator &p_it);
-//与えられた凸図形データ群からiteratorの指す一つ前の要素の中身を返す
-Point getBackConvexPoint(vector<vector<Point> > &conv,vector<vector<Point> >::iterator &c_it,vector<Point>::iterator &p_it);
-//与えられた凸図形データ群からiteratorの指す一つ次の要素の中身を返す
-Point getNextConvexPoint(vector<vector<Point> > &conv,vector<vector<Point> >::iterator &c_it,vector<Point>::iterator &p_it);
-//与えられた画像に与えられた点を描画する
-void drawClickContPoint(Mat &img, Point c_p, Point n_p, Point b_p);
-void drawClickContPoint(Mat &img, Point c_p, Point s_p);
+
+//与えられた点群データ群からiteratorの指す要素を削除する
+bool eraseVVPoint(vector<vector<Point> > &vvp,vector<vector<Point> >::iterator &vvp_it,vector<Point>::iterator &vp_it);
+
+//与えられた点群データ群からiteratorの指す要素の中身を返す
+Point getVVPoint(vector<vector<Point> > &vvp,vector<vector<Point> >::iterator &vvp_it,vector<Point>::iterator &vp_it);
+
+//与えられた点群データ群からiteratorの指す一つ前の要素の中身を返す
+Point getBackVVPoint(vector<vector<Point> > &vvp,vector<vector<Point> >::iterator &vvp_it,vector<Point>::iterator &vp_it);
+
+//与えられた点群データ群からiteratorの指す一つ次の要素の中身を返す
+Point getNextVVPoint(vector<vector<Point> > &vvp,vector<vector<Point> >::iterator &vvp_it,vector<Point>::iterator &vp_it);
+
+//画像に与えられた三つの点を描画する
+void drawPoints(Mat &img, Point c_p, Point n_p, Point b_p);
+
+//与えられた画像に与えられた二つの点を描画する
+void drawPoints(Mat &img, Point c_p, Point s_p);
+
 //与えられた点が二つの点のどちらに近いかを判断し、近い方の点を返す
 Point getSecondPoint(Point c_p,Point n_p,Point b_p);
+
 //与えられたvector<vector<Point>>型をTimedShortSeq型にして返す
 TimedShortSeq vectToSeq(vector<vector<Point> > vvp);
+
 //与えられたTimedShortSeq型をvector<vector<Point>>型に変換する
 void seqToVec(TimedShortSeq tss,vector<vector<Point> > &vvp);
+
 //与えられた二点からなる線分の長さを返す
 double getPointToPointLength(Point p1,Point p2);
+
 //輪郭点群の最適化
 void defragVector(vector<Point> &vp);
 
+//順不同で同じ要素を持つvectorがあるかどうか調べる
+bool aloneVector(vector<Point> alone_vp,vector<vector<Point> > vvp);
 
 // Module specification
 // <rtc-template block="module_spec">
@@ -75,7 +114,7 @@ static const char* convtolinemap_spec[] =
     "implementation_id", "convToLineMap",
     "type_name",         "convToLineMap",
     "description",       "輪郭情報と特徴点を基にラインマップへ変換する",
-    "version",           "2.1.0",
+    "version",           "3.0.0",
     "vendor",            "Masaru Tatekawa(SIT)",
     "category",          "Conversion",
     "activity_type",     "PERIODIC",
@@ -84,14 +123,17 @@ static const char* convtolinemap_spec[] =
     "language",          "C++",
     "lang_type",         "compile",
     // Configuration variables
-    "conf.default.02_modifyType", "erase",
+    "conf.default.03_modifyType", "defrag",
     "conf.default.01_threshold", "3",
+    "conf.default.02_regionFill", "ON",
     // Widget
-    "conf.__widget__.02_modifyType", "radio",
+    "conf.__widget__.03_modifyType", "radio",
     "conf.__widget__.01_threshold", "text",
+    "conf.__widget__.02_regionFill", "radio",
     // Constraints
-    "conf.__constraints__.02_modifyType", "(erase,add)",
+    "conf.__constraints__.03_modifyType", "(defrag,eraseFigure,erasePoint,add,movePoint)",
     "conf.__constraints__.01_threshold", "x>=0",
+    "conf.__constraints__.02_regionFill", "(ON,OFF)",
     ""
   };
 // </rtc-template>
@@ -153,8 +195,9 @@ RTC::ReturnCode_t convToLineMap::onInitialize()
 
   // <rtc-template block="bind_config">
   // Bind variables and configuration variable
-  bindParameter("02_modifyType", m_modi_type, "erase");
+  bindParameter("03_modifyType", m_modi_type, "defrag");
   bindParameter("01_threshold", m_threshold, "3");
+  bindParameter("02_regionFill", m_region_fill, "ON");
   // </rtc-template>
   
   return RTC::RTC_OK;
@@ -187,12 +230,13 @@ RTC::ReturnCode_t convToLineMap::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t convToLineMap::onActivated(RTC::UniqueId ec_id)
 {
+	cout<<"convToLineMap : onActivated : START"<<endl;
 	//temp領域のパスを読み込む
 	if(m_temp_pathIn.isNew()){
 		m_temp_pathIn.read();
 		tempName = m_temp_path.data;
 	}else{
-		tempName = "C:\\tmp\\sub";
+		tempName = "C:\\tmp\\makeMapsModel";
 	}
 
 	//ポートの初期化
@@ -206,6 +250,7 @@ RTC::ReturnCode_t convToLineMap::onActivated(RTC::UniqueId ec_id)
 	//持越し変数の初期化
 	old_cont_data = TimedShortSeq();
 	old_feature_points = TimedFloatSeq();
+	old_region_fill = m_region_fill.c_str();
 
 	line_base.clear();
 	reset_line_base.clear();
@@ -227,13 +272,15 @@ RTC::ReturnCode_t convToLineMap::onActivated(RTC::UniqueId ec_id)
 	contours_modify_flag = false;
 	contours_click_erase_flag = false;
 
-	click_step = 0;
+	add_click_step = 0;
+	move_click_step = 0;
 	click_cont_point = Point();
 	back_cont_point = Point();
 	next_cont_point = Point();
 	second_cont_point = Point();
 	click_feature_point = Point();
 
+	cout<<"convToLineMap : onActivated : END"<<endl;
   return RTC::RTC_OK;
 }
 
@@ -263,10 +310,10 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 
 		//すでに受け取っている画像と違う画像な場合
 		if(!equalCamImg(old_img,m_src_img)){
-			cout<<"changeImg"<<endl;
+			cout<<"convToLineMap : changeImg"<<endl;
 
 			src_cam_img = old_img;
-			cout<<src_cam_img.tm.sec<<","<<src_cam_img.tm.nsec<<endl;
+			cout<<"convToLineMap : "<<src_cam_img.tm.sec<<","<<src_cam_img.tm.nsec<<endl;
 
 			//NewされたCameraImageをMat型に変換
 			src_img = CamToMat(m_src_img);	//受信した画像
@@ -285,7 +332,7 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 
 		//凸図形データ群が更新された場合
 		if(!equalTimedShortSeq(old_cont_data,m_cont_data)){
-			cout<<"changeContoursData"<<endl;
+			cout<<"convToLineMap : changeContoursData"<<endl;
 
 			seqToVec(old_cont_data,cont_data);
 			remake = true;
@@ -298,7 +345,7 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 
 		//特徴点データが更新された場合
 		if(!equalTimedFloatSeq(old_feature_points,m_feature_points)){
-			cout<<"changeFeaturePoint"<<endl;
+			cout<<"convToLineMap : changeFeaturePoint"<<endl;
 
 			//保持してあった特徴点データを削除
 			keypoints.clear();
@@ -332,7 +379,7 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 
 	//画像データ、特徴点群、輪郭点群を受け取った場合
 	if(gray_color_img.data != 0 && keypoints.size() != 0 && cont_data.size() != 0 && remake == true){
-		cout<<"MakeLineMapBase"<<endl;
+		cout<<"convToLineMap : MakeLineMapBase"<<endl;
 
 		//輪郭図形群を初期化
 		line_base.clear();
@@ -351,15 +398,17 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 				Point p = *vp_it;
 
 				//輪郭点から一番近い特徴点
-				Point near_p = getNearFeaturePoint(gray_color_img,keypoints,p);
+				Point near_p = getNearPoint(gray_color_img,keypoints,p);
+				
 				//輪郭点と特徴点の距離がm_thresholdの値以下の場合輪郭図形の頂点として保持
 				if(m_threshold > getPointToPointLength(p,near_p))line_base_points.push_back(near_p);
 
 			}
 			//保持した図形頂点群から、連続して重なっている点を削除
-//			defragVector(line_base_points);
-			//図形が線分以上として成り立っている場合は輪郭図形として保持
-			if(line_base_points.size() > 1)line_base.push_back(line_base_points);
+			defragVector(line_base_points);
+			//図形が線分以上として成り立っている場合かつ、同じ形の点群が存在しない場合は輪郭図形として保持
+			if(line_base_points.size() > 1 && aloneVector(line_base_points,line_base))
+				line_base.push_back(line_base_points);
 		}
 	}
 
@@ -367,7 +416,7 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 /*- - - - - - - - - - - 下地ラインマップに対するユーザの修正 - - - - - - - - - - -*/
 
 	if(line_base.size() != 0 && remake == true){
-		cout<<"DrawContours"<<endl;
+		cout<<"convToLineMap : DrawContours"<<endl;
 
 		pre_img = Mat();
 
@@ -377,11 +426,13 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 		reset_line_base = line_base;
 		last_line_base = line_base;
 		//元画像のグレー画像に凸図形輪郭データを描画
-		drawContoursImage(line_base,src_gray_copy_img);
+		drawContoursImage(line_base, src_gray_copy_img, Scalar(0,0,255),m_region_fill);
+		//元画像のグレー画像に輪郭点データを描画
+		drawContPointImage(line_base, src_gray_copy_img);
 
 		//処理する画像をtemp領域に保存
 		//保存場所の絶対パスをOutPortにコピー
-		m_modi_img_path = makepathString(tempName + "\\contours_modi_img.jpg",MatToCam(src_gray_copy_img));
+		m_modi_img_path = makePathString(tempName + "\\sub\\contours_modi_img.jpg",MatToCam(src_gray_copy_img));
 		m_modi_img_pathOut.write();
 
 		//輪郭データの抽出が終了したフラグを立てる
@@ -392,14 +443,15 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 		contours_click_erase_flag = false;
 
 		//その他フラグ変数の初期化を行う
-		click_step = 0;
+		add_click_step = 0;
+		move_click_step = 0;
 		click_cont_point = Point();
 		back_cont_point = Point();
 		next_cont_point = Point();
 		second_cont_point = Point();
 		click_feature_point = Point();
 
-		cout<<"ContoursMedify"<<endl;
+		cout<<"convToLineMap : ContoursMedify"<<endl;
 	}
 
 	//輪郭データ抽出が完了し、ユーザによる修正が終わっていない場合
@@ -409,105 +461,164 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 		if(first_flag == true){
 			while(m_click_pointIn.isNew()) m_click_pointIn.read();
 			while(m_drag_rectIn.isNew()) m_drag_rectIn.read();
-			cout<<"clear Buf"<<endl;
+			cout<<"convToLineMap : clear Buf"<<endl;
 			first_flag = false;
+
 		}
 
+		bool repaint_flag = false;
+
+		if(old_region_fill != m_region_fill.c_str()){
+			old_region_fill = m_region_fill.c_str();
+			repaint_flag = true;
+		}
 
 		//ユーザのクリック情報をNew
 		if(m_click_pointIn.isNew()){
 			m_click_pointIn.read();
 
-			bool save_last = true;
+			repaint_flag = true;
 
 			//ユーザからの処理フラグ情報(z軸データ)による場合分け
 			switch((int)m_click_point.data.z){
 			
 			//クリック処理を表すフラグ
-			case 1:
-				if(contours_click_erase_flag == false){
-					//凸図形輪郭データを保持
-					if(save_last){
-						last_line_base = line_base;
-						save_last = false;
-					}
+			case 1:{
+				//凸図形輪郭データを保持
+				last_line_base = line_base;
+
+				//追加に用いるiteratorの宣言
+				vector<vector<Point>>::iterator near_convex_it;
+				vector<Point>::iterator near_point_it;
+
+
+				//configで修正タイプがdefragと選択されている場合
+				if(m_modi_type == "defrag"){
+					//追加処理の初期化
+					add_click_step = 0;
+					move_click_step = 0;
+
 					//クリックされた場所の輪郭データを取り除く
-					eraceClickRect(gray_img,line_base,m_click_point.data);
+					defragClickRect(gray_img,line_base,m_click_point.data);
 
-				}else{
+				//configで修正タイプがeraseFigureと選択されている場合
+				}else if(m_modi_type == "eraseFigure"){
+					//追加処理の初期化
+					add_click_step = 0;
+					move_click_step = 0;
 
-					//追加に用いるiteratorの宣言
-					vector<vector<Point>>::iterator near_convex_it;
-					vector<Point>::iterator near_point_it;
+					//クリックされた場所の輪郭データを取り除く
+					eraseClickRect(gray_img,line_base,m_click_point.data);
 
+				//configで修正タイプがreasePointと選択されている場合
+				}else if(m_modi_type == "erasePoint"){
+					//追加処理の初期化
+					add_click_step = 0;
+					move_click_step = 0;
 
-					//削除処理
-					if(m_modi_type == "erase"){
-						if(save_last){
-							//凸図形輪郭データを保持
-							last_line_base = line_base;
-							save_last = false;
-						}
+					//クリック座標と一番近い凸図形頂点のiteratorが取得できた場合
+					if(getNearConvexPoint(gray_img,line_base,Point(m_click_point.data.x,m_click_point.data.y),near_convex_it,near_point_it)){
+						//iteraotrの指す要素を削除
+						eraseVVPoint(line_base,near_convex_it,near_point_it);
+					}
 
-						//追加処理の初期化
-						click_step = 0;
-
+				//configで修正タイプがaddと選択されている場合
+				}else if(m_modi_type == "add"){
+					move_click_step = 0;
+					switch(add_click_step){
+					case 0:
 						//クリック座標と一番近い凸図形頂点のiteratorが取得できた場合
 						if(getNearConvexPoint(gray_img,line_base,Point(m_click_point.data.x,m_click_point.data.y),near_convex_it,near_point_it)){
-							//iteraotrの指す要素を削除
-							eraseConvexPoint(line_base,near_convex_it,near_point_it);
-						}
-
-					//追加処理
-					}else{
-						switch(click_step){
-						case 0:
-							//クリック座標と一番近い凸図形頂点のiteratorが取得できた場合
-							if(getNearConvexPoint(gray_img,line_base,Point(m_click_point.data.x,m_click_point.data.y),near_convex_it,near_point_it)){
-								//凸図形頂点の座標を取得
-								click_cont_point = getConvexPoint(line_base,near_convex_it,near_point_it);
-								//凸図形頂点の次の座標を取得
-								next_cont_point = getNextConvexPoint(line_base,near_convex_it,near_point_it);
-								//凸図形頂点の前の座標を取得
-								back_cont_point = getBackConvexPoint(line_base,near_convex_it,near_point_it);
-
-								click_step++;
-							}
-							break;
-						case 1:
-							//前後どちらの頂点が選択されたかを判別し、その点を取得する
-							second_cont_point = getSecondPoint(Point(m_click_point.data.x,m_click_point.data.y),next_cont_point,back_cont_point);
-
-							click_step++;
-							break;
-
-						case 2:
-							if(save_last){
-								//凸図形輪郭データを保持
-								last_line_base = line_base;
-								save_last = false;
-							}
-
 							//凸図形頂点の座標を取得
-							click_feature_point = getNearFeaturePoint(gray_img,keypoints,Point(m_click_point.data.x,m_click_point.data.y));
-							//二つの選択頂点の間に指定された特徴点を追加
-							//点i -> 点i+1の関係だったとき
-							if(second_cont_point == next_cont_point){
-								if(getNearConvexPoint(gray_img,line_base,next_cont_point,near_convex_it,near_point_it)){
-									line_base.at(near_convex_it - line_base.begin()).insert(near_point_it,1,click_feature_point);
-								}
-							//点i -> 点i-1の関係だったとき
-							}else{
-								if(getNearConvexPoint(gray_img,line_base,click_cont_point,near_convex_it,near_point_it)){
-									line_base.at(near_convex_it - line_base.begin()).insert(near_point_it,1,click_feature_point);
-								}
-							}
+							click_cont_point = getVVPoint(line_base,near_convex_it,near_point_it);
+							//凸図形頂点の次の座標を取得
+							next_cont_point = getNextVVPoint(line_base,near_convex_it,near_point_it);
+							//凸図形頂点の前の座標を取得
+							back_cont_point = getBackVVPoint(line_base,near_convex_it,near_point_it);
 
-							click_step = 0;
-							break;
+							add_click_step++;
 						}
+						break;
+					case 1:
+						//前後どちらの頂点が選択されたかを判別し、その点を取得する
+						second_cont_point = getSecondPoint(Point(m_click_point.data.x,m_click_point.data.y),next_cont_point,back_cont_point);
+
+						add_click_step++;
+						break;
+
+					case 2:
+						//追加したい凸図形頂点の座標を特徴点群より取得
+						click_feature_point = getNearPoint(gray_img,keypoints,Point(m_click_point.data.x,m_click_point.data.y));
+						//二つの選択頂点の間に指定された特徴点を追加
+						//点i -> 点i+1の関係だったとき
+						if(second_cont_point == next_cont_point){
+							if(getNearConvexPoint(gray_img,line_base,next_cont_point,near_convex_it,near_point_it)){
+								line_base.at(near_convex_it - line_base.begin()).insert(near_point_it,1,click_feature_point);
+							}
+						//点i -> 点i-1の関係だったとき
+						}else{
+							if(getNearConvexPoint(gray_img,line_base,click_cont_point,near_convex_it,near_point_it)){
+								line_base.at(near_convex_it - line_base.begin()).insert(near_point_it,1,click_feature_point);
+							}
+						}
+
+						add_click_step = 0;
+						break;
+					}
+
+				//configで修正タイプがmovePointと選択されている場合
+				}else{
+					add_click_step = 0;
+					switch(move_click_step){
+					case 0:
+						//クリック座標と一番近い凸図形頂点のiteratorが取得できた場合
+						if(getNearConvexPoint(gray_img,line_base,Point(m_click_point.data.x,m_click_point.data.y),near_convex_it,near_point_it)){
+							//凸図形頂点の座標を取得
+							click_cont_point = getVVPoint(line_base,near_convex_it,near_point_it);
+
+							move_click_step++;
+						}
+						break;
+					case 1:
+						//追加したい凸図形頂点の座標を特徴点群より取得
+						Point click_f_p = getNearPoint(gray_img,keypoints,Point(m_click_point.data.x,m_click_point.data.y));
+						//すでに選択されている凸図形頂点の座標と、選択された特徴点座標の値とを入れ替える
+						getNearConvexPoint(gray_img,line_base,click_cont_point,near_convex_it,near_point_it);
+						*near_point_it = click_f_p;
+
+						move_click_step = 0;
+						break;
 					}
 				}
+
+				break;
+			}
+			case 2:
+				//ドラッグ処理を受け付けるInPortをNew
+				while(m_drag_rectIn.isNew())m_drag_rectIn.read();
+				//追加処理の初期化
+				if(m_modi_type != "add")add_click_step = 0;
+				if(m_modi_type != "movePoint")move_click_step = 0;
+
+				//凸図形輪郭データを保持
+				last_line_base = line_base;
+
+				//configで修正タイプがeraseFigureと選択されている場合
+				if(m_modi_type == "eraseFigure"){
+					//ドラッグされた領域に含まれる輪郭図形データ群を削除する
+					eraseDraggedRect(line_base,Rect(m_drag_rect.data[0],m_drag_rect.data[1],m_drag_rect.data[2],m_drag_rect.data[3]));
+
+				//configで修正タイプがreasePointと選択されている場合
+				}else if(m_modi_type == "erasePoint"){
+					//ドラッグされた領域に含まれる輪郭データ群を削除する
+					eraseDraggedPoint(line_base,Rect(m_drag_rect.data[0],m_drag_rect.data[1],m_drag_rect.data[2],m_drag_rect.data[3]));
+
+				//configで修正タイプがaddと選択されている場合
+				}else if(m_modi_type == "add"){
+					//ドラッグされた領域を輪郭データ群に追加する
+					if(add_click_step == 0)addDraggedRect(line_base,Rect(m_drag_rect.data[0],m_drag_rect.data[1],m_drag_rect.data[2],m_drag_rect.data[3]));
+				}
+
 				break;
 
 			//リセットデータの更新が押されたことを表すフラグ
@@ -533,73 +644,46 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 
 			//修正処理完了を示すフラグ
 			case 5:
-				if(contours_click_erase_flag == false){
-					//輪郭修正の諸段階が終了したフラグを立てる
-					contours_click_erase_flag = true;
-					//前回情報・リセット情報に用いるためにvectorを輪郭データをコピー
-					reset_line_base = line_base;
-					last_line_base = line_base;
-					click_step = 0;
+				//輪郭修正が終了したフラグを立てる
+				contours_modify_flag = true;
 
-					cout<<"ContoursModifyStep1FIN"<<endl;
+				//完成したラインデータをOutPortに送る
+				m_map_line = vectToSeq(line_base);
+				m_map_line.tm = src_cam_img.tm;
+				m_map_lineOut.write();
 
-				}else{
-					//輪郭修正が終了したフラグを立てる
-					contours_modify_flag = true;
-
-					//完成したラインデータをOutPortに送る
-					m_map_line = vectToSeq(line_base);
-					m_map_line.tm = src_cam_img.tm;
-					m_map_lineOut.write();
-
-					cout<<"ContoursModifyStep2FIN"<<endl;
-
-				}
-
+				cout<<"convToLineMap : ContoursModifyFin"<<endl;
 
 				break;
 			default :
 				break;
 			}
+		}
 
-			//ドラッグ処理を受け付けるInPortをNew
-			if(contours_click_erase_flag == false && m_drag_rectIn.isNew()){
-
-				//Portの読み込み
-				m_drag_rectIn.read();
-
-				//凸図形輪郭データを保持
-				if(save_last){
-					last_line_base = line_base;
-					save_last = false;
-				}
-
-				//ドラッグされた領域に含まれる輪郭データ群を削除する
-				eraceDraggedRect(line_base,Rect(m_drag_rect.data[0],m_drag_rect.data[1],m_drag_rect.data[2],m_drag_rect.data[3]));
-			}
-
+		if(repaint_flag){
 			//変更された輪郭データ群に対して再描画を行う
 			Mat src_gray_copy_img = gray_color_img.clone();
-			//元画像のグレー画像に凸図形輪郭データを描画
-			drawContoursImage(line_base,src_gray_copy_img);
+			//元画像のグレー画像に輪郭図形データを描画
+			drawContoursImage(line_base, src_gray_copy_img, Scalar(0,0,255),m_region_fill);
 
 			//クリック情報の可視化
-			if(click_step == 1)	drawClickContPoint(src_gray_copy_img, click_cont_point, next_cont_point, back_cont_point);
-			else if(click_step == 2){
-				drawClickContPoint(src_gray_copy_img, click_cont_point, second_cont_point);
-				drawFeaturePoint(keypoints, src_gray_copy_img);
+			if(add_click_step == 1)	drawPoints(src_gray_copy_img, click_cont_point, next_cont_point, back_cont_point);
+			else if(add_click_step == 2){
+				drawPoints(src_gray_copy_img, click_cont_point, second_cont_point);
+				drawPointVector(keypoints, src_gray_copy_img, Scalar(255,0,255));
+			}else if(move_click_step == 1){
+				drawPointVector(keypoints, src_gray_copy_img, Scalar(255,0,255));
+				circle(src_gray_copy_img, click_cont_point, 3, Scalar(0,255,0), -1);
+			}else{
+				//元画像のグレー画像に輪郭点データを描画
+				drawContPointImage(line_base, src_gray_copy_img);
 			}
 
 			//処理する画像をtemp領域に保存
 			//保存場所の絶対パスをOutPortにコピー
-			m_modi_img_path = makepathString(tempName + "\\contours_modi_img.jpg",MatToCam(src_gray_copy_img));
+			m_modi_img_path = makePathString(tempName + "\\sub\\contours_modi_img.jpg",MatToCam(src_gray_copy_img));
 			m_modi_img_pathOut.write();
 		}
-	}else{
-		//完成したラインデータをOutPortに送る
-		m_map_line = vectToSeq(line_base);
-		m_map_line.tm = src_cam_img.tm;
-		m_map_lineOut.write();
 	}
 
   return RTC::RTC_OK;
@@ -654,7 +738,6 @@ extern "C"
   }
   
 };
-
 
 
 /**
@@ -801,39 +884,58 @@ bool equalTimedFloatSeq(TimedFloatSeq &src,TimedFloatSeq &rec){
  * @para Mat& src_img					描画対象画像
  * @return void					
  */
-void drawContoursImage(vector<vector<Point> > cont,Mat &src_img){
+void drawContoursImage(vector<vector<Point> > cont,Mat &src_img,Scalar color,string region_fill){
 		
-	Scalar color = Scalar(0,0,255);	//グレースケールに輪郭を囲む長方形を描画するためのカラー
 	//輪郭を囲む凸図形を描画
 	for( int i = 0; i< cont.size(); i++ ){
-		drawContours( src_img, cont, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
+		if(region_fill == "ON")drawContours( src_img, cont, i, color, -1, 8, vector<Vec4i>(), 0, Point() );
+		else drawContours( src_img, cont, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
 	}
 }
 
 /**
- * 特徴点データ群を画像に描画する
+ * 点群データ群を画像に描画する
  *
- * @para vector<Point> keypoints	特徴点データ群
- * @para Mat& src_img				描画対象画像
+ * @para vector<vector<Point> > vvp	点群データ群
+ * @para Mat &src_img				描画対象画像
+ * @para Scalar c					書き込みカラー
  * @return void					
  */
-void drawFeaturePoint(vector<Point> keypoints,Mat &src_img){
-	for(vector<Point>::iterator itk = keypoints.begin(); itk!=keypoints.end(); ++itk) {
-		Point fp = *itk;
-		circle(src_img, fp, 3, Scalar(255,255,0), -1);
+void drawContPointImage(vector<vector<Point> > vvp,Mat &src_img){
+
+	for(vector<vector<Point> >::iterator vvp_it = vvp.begin();vvp_it != vvp.end();++vvp_it){
+
+		//描画の色を輪郭点ごとに変える
+		Scalar color = Scalar(rand()%256,rand()%256,rand()%256);
+
+		drawPointVector(*vvp_it,src_img,color);
 	}
 }
 
+
 /**
- * 与えられた座標が輪郭点データ群によって成り立つ凸図形に入っているかを調べ、
- * もし入っている場合は入っている凸図形の中から一番面積が小さい凸図形の輪郭点データを削除する
+ * 点データ群を画像に描画する
  *
- * @para int img_size			基画像のサイズ
- * @para vector<Rect> &rect		輪郭点データ群
- * @para Point3D p				座標データ
- * @return bool					削除を行った場合はtrueを返す
+ * @para vector<Point> vp	点データ群
+ * @para Mat &src_img		描画対象画像
+ * @para Scalar c			書き込みカラー
+ * @return void					
  */
-bool eraceClickRect(Mat img,vector<vector<Point>> &cont,Point3D p){
+void drawPointVector(vector<Point> vp,Mat &src_img,Scalar color){
+	for(vector<Point>::iterator vp_it = vp.begin(); vp_it!=vp.end(); ++vp_it)
+		circle(src_img, *vp_it, 3, color, -1);
+}
+
+/**
+ * 与えられた座標が輪郭点データ群によって成り立つ図形に入っているかを調べ、
+ * もし入っている場合は入っている図形の中から一番面積が小さい図形の輪郭点データを削除する
+ *
+ * @para int img_size					基画像のサイズ
+ * @para vector<vector<Point>> &cont	輪郭点データ群
+ * @para Point3D p						座標データ
+ * @return bool							削除を行った場合はtrueを返す
+ */
+bool eraseClickRect(Mat img,vector<vector<Point>> &cont,Point3D p){
 	vector<vector<vector<Point>>::iterator> cont_it;
 	vector<double> rect_area;
 
@@ -887,23 +989,113 @@ bool eraceClickRect(Mat img,vector<vector<Point>> &cont,Point3D p){
 			Point pp = *it;
 			str << "("; str << pp.x; str << ","; str << pp.y; str << ") ";
 		}
-		cout<<"EraseConvex:"<<str.str()<<endl;
+		cout<<"convToLineMap : EraseConvex:"<<str.str()<<endl;
 		cont.erase(min_it);
 	}else{
-		cout<<"ErasePoint:NON"<<endl;
+		cout<<"convToLineMap : ErasePoint:NON"<<endl;
 	}
 
 	return it_flag;
 }
 
 /**
- * ドラッグによって形成された長方形の中に存在する輪郭点データを削除する
+ * 与えられた座標が輪郭点データ群によって成り立つ図形に入っているかを調べ、
+ * もし入っている場合は入っている図形の中から一番面積が小さい図形の輪郭点データを最適化する
+ *
+ * @para int img_size					基画像のサイズ
+ * @para vector<vector<Point>> &cont	輪郭点データ群
+ * @para Point3D p						座標データ
+ * @return bool							最適化を行った場合はtrueを返す
+ */
+bool defragClickRect(Mat img,vector<vector<Point>> &cont,Point3D p){
+	vector<vector<vector<Point>>::iterator> cont_it;
+	vector<double> rect_area;
+
+	//与えられた座標が、輪郭点データ群から成される凸図形の中に入っているかを調べ
+	//入っている場合はその凸図形の面積と、その凸図形のiteratorを保持
+	for (vector<vector<Point>>::iterator it = cont.begin(); it != cont.end(); ++it) {
+		vector<Point> r = *it;
+
+		int cn = 0;
+
+		for(int i = 0; i < r.size() ; i++){
+			int fp = i; int ep = i+1;
+			if(ep == r.size())ep = 0;
+
+			// 上向きの辺。点Pがy軸方向について、始点と終点の間にある。ただし、終点は含まない。(ルール1)
+			if( ((r[fp].y <= p.y) && (r[ep].y > p.y))
+			// 下向きの辺。点Pがy軸方向について、始点と終点の間にある。ただし、始点は含まない。(ルール2)
+				|| ((r[fp].y > p.y) && (r[ep].y <= p.y)) ){
+			// ルール1,ルール2を確認することで、ルール3も確認できている。
+            
+				// 辺は点pよりも右側にある。ただし、重ならない。(ルール4)
+				// 辺が点pと同じ高さになる位置を特定し、その時のxの値と点pのxの値を比較する。
+				double vt = (p.y - r[fp].y) / (r[ep].y - r[fp].y);
+				if(p.x < (r[fp].x + (vt * (r[ep].x - r[fp].x)))) ++cn;
+			}
+		}
+		if(cn%2 == 1){
+			cont_it.push_back(it);
+			rect_area.push_back(contourArea(r));
+		}
+	}
+
+	vector<vector<Point>>::iterator min_it;
+	int min_rect_area = Rect(0,0,img.cols,img.rows).area();
+	bool it_flag = false;
+
+	//保持した長方形面積データ群の中から、最少の面積を持つ凸図形のiteratorを求める
+	for(int i=0;i<cont_it.size();i++){
+		if(min_rect_area > rect_area.at(i)){
+			it_flag = true;
+			min_rect_area = rect_area.at(i);
+			min_it = cont_it.at(i);
+		}
+	}
+
+	//最少長方形のiteratorが求まっている場合は、そのiteratorの指す輪郭点データから、重なる座標を削除する
+	if(it_flag){
+		vector<Point> r = *min_it;
+		vector<Point> defrag_r;
+		ostringstream str;
+		for(vector<Point>::iterator it = r.begin(); it != r.end(); ++it){
+			bool same_flag = false;
+			Point pp = *it;
+			for(int i=0;i<defrag_r.size();i++){
+				if(pp.x == defrag_r.at(i).x && pp.y == defrag_r.at(i).y){
+					same_flag =true;
+					break;
+				}
+			}
+			if(same_flag == false){
+				str << "("; str << pp.x; str << ","; str << pp.y; str << ") ";
+				defrag_r.push_back(pp);
+			}
+		}
+
+		cout<<"convToLineMap : DefragConvex:"<<str.str()<<endl;
+		cont.erase(min_it);
+		vector<Point> contour;
+		approxPolyDP( Mat(defrag_r), contour, 3, true );
+
+		cont.push_back(contour);
+
+	}else{
+		cout<<"convToLineMap : DefragConvex:NON"<<endl;
+	}
+
+	return it_flag;
+}
+
+
+/**
+ * ドラッグによって形成された長方形の中に存在する図形輪郭点データ群を削除する
  *
  * @para vector<vector<Point>> &cont	輪郭点データ群
  * @para Rect dragged_rect				ドラッグでできた長方形
  * @return void
  */
-void eraceDraggedRect(vector<vector<Point>> &cont,Rect dr){
+void eraseDraggedRect(vector<vector<Point>> &cont,Rect dr){
 
 	//与えられた長方形の中に入っている凸図形輪郭点データ群を削除する
 	for (vector<vector<Point>>::iterator it = cont.begin(); it != cont.end();) {
@@ -925,63 +1117,118 @@ void eraceDraggedRect(vector<vector<Point>> &cont,Rect dr){
 }
 
 /**
+ * ドラッグによって形成された長方形の中に存在する輪郭点データを削除する
+ *
+ * @para vector<vector<Point>> &cont	輪郭点データ群
+ * @para Rect dragged_rect				ドラッグでできた長方形
+ * @return void
+ */
+void eraseDraggedPoint(vector<vector<Point>> &cont,Rect dr){
+
+	//与えられた長方形の中に入っている頂点を削除する
+	for (vector<vector<Point>>::iterator vp_it = cont.begin(); vp_it != cont.end();) {
+		bool erase_flag = true;
+
+		vector<Point> vp = *vp_it;
+
+		for(vector<Point>::iterator p_it = vp.begin(); p_it != vp.end();){
+			Point p = *p_it;
+			if(dr.tl().x < p.x && dr.tl().y < p.y
+				&& dr.br().x > p.x && dr.br().y > p.y){
+					p_it = vp.erase(p_it);
+			}else{
+				p_it++;
+			}
+		}
+
+		*vp_it = vp;
+		if(vp.size() <= 1) vp_it = cont.erase(vp_it);
+		else vp_it++;
+	}
+}
+
+/**
+ * ドラッグによって形成された長方形のを図形輪郭点データ群に追加する
+ *
+ * @para vector<vector<Point>> &cont	輪郭点データ群
+ * @para Rect dragged_rect				ドラッグでできた長方形
+ * @return void
+ */
+void addDraggedRect(vector<vector<Point>> &cont,Rect dr){
+	//追加する点群を作成
+	vector<Point> vp;
+	//左上の点を追加
+	vp.push_back(dr.tl());
+	//右上の点を追加
+	vp.push_back(Point(dr.br().x,dr.tl().y));
+	//右下の点を追加
+	vp.push_back(dr.br());
+	//左下の点を追加
+	vp.push_back(Point(dr.tl().x,dr.br().y));
+
+	//輪郭データ群に追加
+	cont.push_back(vp);
+}
+
+/**
  * 画像の保存を行いそのパスを返す
  *
  * @para String str			保存場所
  * @para CameraImage src	保存対象画像
  * @return TimedString		保存データへのパス
  */
-TimedString makepathString(String str,CameraImage src){
+TimedString makePathString(String str,CameraImage src){
 	TimedString ts;
+
+	setTimestamp(ts);
 
 	//処理する画像をtemp領域に保存
 	imwrite(str,CamToMat(src));
 
 	//保存場所の絶対パスをTimedStringにコピー
 	ts.data = str.c_str();
-	ts.tm = src.tm;
 
 	return ts;
 }
 
 /**
- * 与えられた点に対して、一番近い特徴点の座標を取得する
+ * 与えられた点に対して、点データ群の中から一番近い点の座標を取得する
  *
  * @para Mat img				対象捜索範囲となる画像
- * @para vector<Point> &fear	特徴点データ群
+ * @para vector<Point> &fear	点データ群
  * @para Point p				入力座標
- * @return Point				一番近い特徴点の座標
+ * @return Point				一番近い点の座標
  */
-Point getNearFeaturePoint(Mat img,vector<Point> &fear,Point p){
-	Point fp = Point();
+Point getNearPoint(Mat img,vector<Point> &vp,Point p){
+	Point n_p = Point();
 
 	//点と点の距離の最小値を持つ変数
 	//初期値は画像の対角線
 	double min_length = sqrt(pow(img.cols,2.0) + pow(img.rows,2.0));
 
 	//特徴点データ群全網羅
-	for(vector<Point>::iterator fear_it = fear.begin();fear_it != fear.end();++fear_it){
-		Point fear_p = *fear_it;
+	for(vector<Point>::iterator vp_it = vp.begin();vp_it != vp.end();++vp_it){
+		Point n_p_sub = *vp_it;
 
-		double line_length = getPointToPointLength(p,fear_p);
+		double line_length = getPointToPointLength(p,n_p_sub);
 
 		//現在保持している最小値よりも小さい値だった場合
 		if(line_length < min_length){
 			//最小値を更新
 			min_length = line_length;
 			//最小値となる特徴点座標を更新
-			fp = fear_p;
+			n_p = n_p_sub;
 		}
 	}
-	return fp;
+	return n_p;
 }
 
 
 /**
- * 与えられた点に対して、一番近い凸図形頂点のiteratorを取得する
+ * 与えられた点に対して、一番近い図形頂点のiteratorを取得する
  *
  * @para Mat img									対象捜索範囲となる画像
- * @para vector<vector<Point> > &conv				凸図形データ群
+ * @para vector<vector<Point> > &conv				図形データ群
  * @para Point p									入力座標
  * @para vector<vector<Point> >::iterator &c_it		目標頂点を含む凸図形のiterator
  * @para vector<Point>::iterator &p_it				目標頂点のiterator
@@ -1024,87 +1271,92 @@ bool getNearConvexPoint(Mat img,vector<vector<Point> > &conv,Point p,vector<vect
 }
 
 /**
- * 与えられた凸図形データ群からiteratorの指す要素を削除する
+ * 与えられた点群データ群からiteratorの指す要素を削除する
  *
- * @para vector<vector<Point> > &conv				凸図形データ群
- * @para vector<vector<Point> >::iterator &c_it		目標座標を含む凸図形のiterator
- * @para vector<Point>::iterator &p_it				目標頂点のiterator
+ * @para vector<vector<Point> > &vvp				削除対象を含む点群データ群
+ * @para vector<vector<Point> >::iterator &vvp_it	削除目標を含む点群データ群のiterator
+ * @para vector<Point>::iterator &vp_it				削除目標のiterator
  * @return void
  */
-void eraseConvexPoint(vector<vector<Point> > &conv,vector<vector<Point> >::iterator &c_it,vector<Point>::iterator &p_it){
+bool eraseVVPoint(vector<vector<Point> > &vvp,vector<vector<Point> >::iterator &vvp_it,vector<Point>::iterator &vp_it){
 	//それぞれのiteratorが指す要素の要素番号
-	int c_num = c_it - conv.begin();
-	int p_num = p_it - conv.at(c_num).begin();
+	int vvp_num = vvp_it - vvp.begin();
+	int vp_num = vp_it - vvp.at(vvp_num).begin();
 
 	//iteratorの指す要素を削除
-	conv.at(c_num).erase(p_it);
+	vvp.at(vvp_num).erase(vp_it);
 	//削除の結果、凸図形の頂点が一つ以下になってしまった場合、図形として成立しないため削除
-	if(conv.at(c_num).size() <= 1)conv.erase(c_it);
+	if(vvp.at(vvp_num).size() <= 1){
+		vvp.erase(vvp_it);
+		return false;
+	}else{
+		return true;
+	}
 }
 
 /**
- * 与えられた凸図形データ群からiteratorの指す要素の中身を返す
+ * 与えられた点群データ群からiteratorの指す要素の中身を返す
  *
- * @para vector<vector<Point> > &conv				凸図形データ群
- * @para vector<vector<Point> >::iterator &c_it		目標座標を含む凸図形のiterator
- * @para vector<Point>::iterator &p_it				目標頂点のiterator
+ * @para vector<vector<Point> > &vvp				点群データ群
+ * @para vector<vector<Point> >::iterator &vvp_it	目標座標を含む点群データ群のiterator
+ * @para vector<Point>::iterator &vp_it				目標座標のiterator
  * @return Point	要素の中身
  */
-Point getConvexPoint(vector<vector<Point> > &conv,vector<vector<Point> >::iterator &c_it,vector<Point>::iterator &p_it){
+Point getVVPoint(vector<vector<Point> > &vvp,vector<vector<Point> >::iterator &vvp_it,vector<Point>::iterator &vp_it){
 	//それぞれのiteratorが指す要素の要素番号
-	int c_num = c_it - conv.begin();
-	int p_num = p_it - conv.at(c_num).begin();
+	int vvp_num = vvp_it - vvp.begin();
+	int vp_num = vp_it - vvp.at(vvp_num).begin();
 
 	//iteratorの指す要素を返す
-	return conv.at(c_num).at(p_num);
+	return vvp.at(vvp_num).at(vp_num);
 }
 
 /**
- * 与えられた凸図形データ群からiteratorの指す一つ前の要素の中身を返す
+ * 与えられた点群データ群からiteratorの指す一つ前の要素の中身を返す
  *
- * @para vector<vector<Point> > &conv				凸図形データ群
- * @para vector<vector<Point> >::iterator &c_it		目標座標を含む凸図形のiterator
- * @para vector<Point>::iterator &p_it				目標頂点のiterator
+ * @para vector<vector<Point> > &vvp				点群データ群
+ * @para vector<vector<Point> >::iterator &vvp_it	目標座標を含む点群データ群のiterator
+ * @para vector<Point>::iterator &vp_it				目標頂点のiterator
  * @return Point	要素の中身
  */
-Point getBackConvexPoint(vector<vector<Point> > &conv,vector<vector<Point> >::iterator &c_it,vector<Point>::iterator &p_it){
+Point getBackVVPoint(vector<vector<Point> > &vvp,vector<vector<Point> >::iterator &vvp_it,vector<Point>::iterator &vp_it){
 	//それぞれのiteratorが指す要素の要素番号
-	int c_num = c_it - conv.begin();
-	int p_num = p_it - conv.at(c_num).begin();
+	int vvp_num = vvp_it - vvp.begin();
+	int vp_num = vp_it - vvp.at(vvp_num).begin();
 	//iteratorがvectorの先頭を指している場合
-	if(p_num == 0){
+	if(vp_num == 0){
 		//そのvectorの最後の要素を返す
-		return conv.at(c_num).at(conv.at(c_num).size() - 1);
+		return vvp.at(vvp_num).at(vvp.at(vvp_num).size() - 1);
 	}else{
 		//iteratorの指す要素の一つ前を返す
-		return conv.at(c_num).at(p_num - 1);
+		return vvp.at(vvp_num).at(vp_num - 1);
 	}
 }
 
 /**
- * 与えられた凸図形データ群からiteratorの指す一つ次の要素の中身を返す
+ * 与えられた点群データ群からiteratorの指す一つ次の要素の中身を返す
  *
- * @para vector<vector<Point> > &conv				凸図形データ群
- * @para vector<vector<Point> >::iterator &c_it		目標座標を含む凸図形のiterator
- * @para vector<Point>::iterator &p_it				目標頂点のiterator
+ * @para vector<vector<Point> > &vvp				点群データ群
+ * @para vector<vector<Point> >::iterator &vvp_it	目標座標を含む点群データ群のiterator
+ * @para vector<Point>::iterator &vp_it				目標頂点のiterator
  * @return Point	要素の中身
  */
-Point getNextConvexPoint(vector<vector<Point> > &conv,vector<vector<Point> >::iterator &c_it,vector<Point>::iterator &p_it){
+Point getNextVVPoint(vector<vector<Point> > &vvp,vector<vector<Point> >::iterator &vvp_it,vector<Point>::iterator &vp_it){
 	//それぞれのiteratorが指す要素の要素番号
-	int c_num = c_it - conv.begin();
-	int p_num = p_it - conv.at(c_num).begin();
+	int vvp_num = vvp_it - vvp.begin();
+	int vp_num = vp_it - vvp.at(vvp_num).begin();
 	//iteratorがvectorの最後を指している場合
-	if(p_num == conv.at(c_num).size() - 1){
+	if(vp_num == vvp.at(vvp_num).size() - 1){
 		//そのvectorの最初の要素を返す
-		return conv.at(c_num).at(0);
+		return vvp.at(vvp_num).at(0);
 	}else{
 		//iteratorの指す要素の一つ次を返す
-		return conv.at(c_num).at(p_num + 1);
+		return vvp.at(vvp_num).at(vp_num + 1);
 	}
 }
 
 /**
- * 与えられた画像に与えられた三つの点を描画する
+ * 画像に与えられた三つの点を描画する
  *
  * @para Mat &img		描画対象の画像
  * @para Point c_p		与えられた点１（クリックされた点）
@@ -1112,7 +1364,7 @@ Point getNextConvexPoint(vector<vector<Point> > &conv,vector<vector<Point> >::it
  * @para Point b_p		与えられた点３（点１の前の頂点）
  * @return void
  */
-void drawClickContPoint(Mat &img, Point c_p, Point n_p, Point b_p){
+void drawPoints(Mat &img, Point c_p, Point n_p, Point b_p){
 	//それぞれの点を描画
 	circle(img, c_p, 3, Scalar(0,255,0), -1);
 	circle(img, n_p, 3, Scalar(255,255,0), -1);
@@ -1127,7 +1379,7 @@ void drawClickContPoint(Mat &img, Point c_p, Point n_p, Point b_p){
  * @para Point s_p		与えられた点２（次に選択された点）
  * @return void
  */
-void drawClickContPoint(Mat &img, Point c_p, Point s_p){
+void drawPoints(Mat &img, Point c_p, Point s_p){
 	//それぞれの点を描画
 	circle(img, c_p, 3, Scalar(0,255,0), -1);
 	circle(img, s_p, 3, Scalar(0,255,0), -1);
@@ -1253,4 +1505,50 @@ void defragVector(vector<Point> &vp){
 			else vp_it++;
 		}
 	}
+}
+
+/**
+ * 順不同で同じ要素を持つvectorがあるかどうか調べる
+ *
+ * @para vector<Point> alone_vp			比較の元となるvector
+ * @para vector<vector<Point> > vvp		比較対象のvector<vectr>
+ * @return bool		同要素のvectorが存在しない場合trueを返す
+ */
+bool aloneVector(vector<Point> alone_vp,vector<vector<Point> > vvp){
+
+	//比較対象のvectorを全網羅する
+	for(vector<vector<Point> >::iterator vvp_it = vvp.begin();vvp_it != vvp.end();++vvp_it){
+		vector<Point> vp = *vvp_it;
+
+		//並びを含め同じものかどうかを判断
+		//同じものならfalseを返す
+		if(vp == alone_vp) return false;
+
+		//比較結果を格納する変数
+		//falseのままループを終えると同じ要素があったことを示す
+		bool alone_flag = false;
+
+		//比較対象と比較元のvectorを総当たりで比較
+		for(int i=0;i<alone_vp.size();i++){
+
+			//今回のループで取り出す比較対象要素が比較元に含まれているかの変数
+			bool alone_point_check = true;
+
+			//比較対象と総当たりで比較
+			for(int j=0;j<vp.size();j++){
+				//同じ要素だった場合
+				if(alone_vp[i] == vp[j]){
+					alone_point_check = false;
+					break;
+				}
+			}
+			//同じ要素がなかった場合
+			if(alone_point_check){
+				alone_flag = true;
+				break;
+			}
+		}
+		if(!alone_flag)return false;
+	}
+	return true;
 }

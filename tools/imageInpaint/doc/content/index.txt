@@ -106,7 +106,7 @@ The available configuration parameters are described below:
 ================ ================== ================ ======
 Parameter        Data type          Default Value    Effect
 ================ ================== ================ ======
-01_contoursType  string             Rectangle        処理に用いる輪郭データタイプを選ぶ<br/>両方の形式のデータをポートから受け取っている場合に用いる
+01_contoursType  string             Convex           処理に用いる輪郭データタイプを選ぶ<br/>両方の形式のデータをポートから受け取っている場合に用いる
 02_MaskDataSelect string             Image            CVInpaintへ送るマスクの情報を選択する
 03_MaskTypeSelect string             All              maskImageを送る場合、全輪郭データを一度に処理するかどうかを選択する
 ================ ================== ================ ======

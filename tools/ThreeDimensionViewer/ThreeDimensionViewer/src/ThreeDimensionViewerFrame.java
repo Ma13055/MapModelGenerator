@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 import javax.swing.*;
 
@@ -80,7 +82,7 @@ public class ThreeDimensionViewerFrame extends JFrame{
 			
 			//ファイルを開く処理により特定のファイルが指定されたとき
 			if(cmd.equals("open")){
-				JFileChooser fc = new JFileChooser();
+				JFileChooser fc = new JFileChooser("C:\\tmp\\makeMapsModel\\maps\\linemaps");
 				fc.setMultiSelectionEnabled(true);
 				
 				int selected = fc.showOpenDialog(this);
@@ -134,7 +136,7 @@ public class ThreeDimensionViewerFrame extends JFrame{
 	
 	
 	//上側のUIボタンパネル
-	class NorthPanel extends JPanel implements ActionListener{
+	class NorthPanel extends JPanel implements ActionListener,ItemListener{
 		private static final long serialVersionUID = 1L;
 		
 		//表示ボタンの宣言
@@ -142,6 +144,7 @@ public class ThreeDimensionViewerFrame extends JFrame{
 		private JTextField scale_text,position_x_text,position_y_text,position_z_text,floor_height;
 		private JLabel jl1,jl2,jl3,jl4,jl5,jl6;
 		public JComboBox<String> floor;
+		public JCheckBox ckbox1;
 
 		NorthPanel(){
 			//パネルの周囲に溝みたいな装飾
@@ -173,22 +176,25 @@ public class ThreeDimensionViewerFrame extends JFrame{
 			
 			floor = new JComboBox<String>();
 			floor.addItem("ALL");
-			floor.addActionListener(this);
+			floor.addItemListener(this);
 			
-			this.add(jl1);
-			this.add(scale_text);
-			this.add(jl2);
-			this.add(position_x_text);
-			this.add(jl3);
-			this.add(position_y_text);
-			this.add(jl4);
-			this.add(position_z_text);
-			this.add(jl5);
-			this.add(floor_height);
-			this.add(jl6);
-			this.add(floor);
+			ckbox1 = new JCheckBox("Polygon",true);
 			
-			this.add(b1);
+			this.add(jl1);				//倍率
+			this.add(scale_text);		//【】
+			this.add(jl2);				//中心位置　X：
+			this.add(position_x_text);	//【】
+			this.add(jl3);				//Y：
+			this.add(position_y_text);	//【】
+			this.add(jl4);				//Z:
+			this.add(position_z_text);	//【】
+			this.add(jl5);				//階の高さ
+			this.add(floor_height);		//【】
+			this.add(jl6);				//表示階
+			this.add(floor);			//【】▽
+			this.add(ckbox1);			//Polygon
+			
+			this.add(b1);				//変更
 			this.add(Box.createRigidArea(space));
 		}
 		
@@ -198,7 +204,7 @@ public class ThreeDimensionViewerFrame extends JFrame{
 		
 		public void buttonScene2(){
 			b1.setEnabled(false);
-		}		
+		}
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -223,6 +229,14 @@ public class ThreeDimensionViewerFrame extends JFrame{
 				}catch(NumberFormatException e1){
 					System.out.println("数字以外が入力されました");
 				}
+			}
+		}
+
+		@Override
+		public void itemStateChanged(ItemEvent e) {
+			// TODO Auto-generated method stub
+			if(e.getStateChange() == ItemEvent.SELECTED){
+				model_panel.repaint();
 			}
 		}
 	}
@@ -387,7 +401,8 @@ public class ThreeDimensionViewerFrame extends JFrame{
 		}
 					
         // 頂点スクリーン座標の設定
-	 	public void setScreenPosition(){
+	 	@SuppressWarnings("unchecked")
+		public void setScreenPosition(){
 	 		if(make_model_flag == false) return;
 	 		for(int k=0;k<vertices.size();k++){
 		 		for(int i=0;i<vertices.get(k).size();i++){
@@ -402,6 +417,21 @@ public class ThreeDimensionViewerFrame extends JFrame{
 		 			v.screenX = (int)(center.x + scale*v.rx);
 		 			v.screenY = (int)(center.y/2 - scale*v.ry);
 		 		}
+	 		}
+	 		for(int k=0;k<faces.size();k++){
+	 			for(int i=0;i<faces.get(k).size();i++){
+	 				Face face = faces.get(k).get(i);
+	 				
+	 				face.z = 0.0;
+	 				for(int j=0;j<face.size();j++){
+	 					face.z += vertices.get(k).get(face.v[j]).rz;
+	 				}
+	 				face.z = face.z / face.size();
+	 			}
+		    	try{
+			 		Collections.sort(faces.get(k), new FaceDepthComparator());
+		    	}catch(IllegalArgumentException iae){
+		    	}
 	 		}
 	 	}
 	 	
@@ -426,17 +456,44 @@ public class ThreeDimensionViewerFrame extends JFrame{
  	        	start_num = floor_num-1; end_num = floor_num;
  	        }
  	        
- 	        for(int k = start_num; k < end_num; k++){
-		 	    for(int i = 0; i < faces.get(k).size(); i++) {
-		 	    	Face face = faces.get(k).get(i);
-		 	
-		 	        for(int j = 0; j < face.size(); j++){
-		 	        	Vertex start = vertices.get(k).get(face.v[j]);
-		 	        	Vertex end = vertices.get(k).get(face.v[(j + 1) % face.size()]);
-		 	        	g.drawLine(start.screenX, start.screenY, end.screenX, end.screenY);
-		 	        }
-		 	    }
+ 	        if(!button_panel.ckbox1.isSelected()){
+	 	        for(int k = start_num; k < end_num; k++){
+			 	    for(int i = 0; i < faces.get(k).size(); i++) {
+			 	    	Face face = faces.get(k).get(i);
+			 	
+			 	        for(int j = 0; j < face.size(); j++){
+			 	        	Vertex start = vertices.get(k).get(face.v[j]);
+			 	        	Vertex end = vertices.get(k).get(face.v[(j + 1) % face.size()]);
+			 	        	g.drawLine(start.screenX, start.screenY, end.screenX, end.screenY);
+			 	        }
+			 	    }
+	 	        }
+ 	        }else{
+	 	        for(int k = start_num; k < end_num; k++){
+			 	    for(int i = 0; i < faces.get(k).size(); i++) {
+		 	        	int[] px = null;
+		 	        	int[] py = null;
+		
+			 	    	Face face = faces.get(k).get(i);
+			 	        for(int j = 0; j < face.size(); j++){
+			 				if(px==null) px = new int[1];
+			 				else px = Arrays.copyOf(px, px.length+1);
+			 				px[px.length-1] = vertices.get(k).get(face.v[j]).screenX;
+			 				
+			 				if(py==null) py = new int[1];
+			 				else py = Arrays.copyOf(py, py.length+1);
+			 				py[py.length-1] = vertices.get(k).get(face.v[j]).screenY;
+			 	        }
+			 	        
+			 	        g.setColor(Color.green);
+			 	        g.fillPolygon(px, py, face.size());
+			 	        
+			 	        g.setColor(Color.black);
+			 	        g.drawPolygon(px, py, face.size());
+			 	    }
+		        }
  	        }
+ 	        
 	 	}
 
 	 	
@@ -523,6 +580,7 @@ public class ThreeDimensionViewerFrame extends JFrame{
 	//面クラス
 	public class Face {
 		public int[] v;
+		public double z;	//奥行
 
 		public Face(){
 			v=null;
@@ -581,5 +639,13 @@ public class ThreeDimensionViewerFrame extends JFrame{
 		public void print(){
 			System.out.println("["+x+","+y+","+z+"]");
 		}
+	}
+	
+	// 面を奥行き順にソートするための Comparator
+	@SuppressWarnings("rawtypes")
+	public class FaceDepthComparator implements Comparator {
+	    public int compare(Object f1, Object f2) {
+    		return ((Face)f1).z > ((Face)f2).z ? 1 : -1;
+	    }
 	}
 }

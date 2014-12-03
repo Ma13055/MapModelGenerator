@@ -11,9 +11,9 @@ set(LINUX_PACKAGE_GENERATOR "DEB")
 
 # component settings
 set(RTC_NAME "${PROJECT_NAME}")
-set(RTC_VERSION "1.1.0")
+set(RTC_VERSION "1.2.0")
 set(RTC_VERSION_MAJOR "1")
-set(RTC_VERSION_MINOR "1")
+set(RTC_VERSION_MINOR "2")
 set(RTC_VERSION_PATCH "0")
 set(RTC_LANG "java")
 set(RTC_DESCRIPTION "AAA")

@@ -100,7 +100,8 @@ mapsManagerは ``mapsManagerComp`` を実行（ ``${prefix}/components/bin`` に
 ================ ================== ================ ====
 01_ImageView     string             OFF              画像表示を選択するための変数
 02_SelectPictNum int                0                画像処理及び線画化処理を行う画像の番号を指定できる<br/>(先のステップから戻ることができる）
-03_SaveSpace     string             C:\\tmp\\maps\\linemaps 完成したラインマップの座標情報群と描画画像を保存する先
+03_SaveSpace     string             C:\\tmp\\makeMapsModel\\maps\\linemaps 完成したラインマップの座標情報群と描画画像を保存する先
+04_SkipNormalize string             NON              正規化処理を飛ばすかどうかを選択するための変数
 ================ ================== ================ ====
 
 ポート
@@ -113,7 +114,7 @@ mapsManagerは ``mapsManagerComp`` を実行（ ``${prefix}/components/bin`` に
 =============== =========== ============================== ====
 receiveCamImg   InPort      RTC::CameraImage               画像データを受け取るポート
 receiveFlagData InPort      RTC::TimedShort                画像データの送り先から現在の送信状態を受け取るポート
-tempFloderPath  InPort      RTC::TimedString               一時作業領域のパスを受け取るためのポート
+tempFolderPath  InPort      RTC::TimedString               一時作業領域のパスを受け取るためのポート
 clickPoint      InPort      RTC::TimedPoint3D              UIでクリックされた座標を受け取るポート
 compNormalizedMap InPort      RTC::CameraImage               地図の正規化処理が終了した地図画像データを受け取るポート
 compLineMap     InPort      RTC::TimedShortSeq             ラインマップ生成処理の結果を受け取るポート

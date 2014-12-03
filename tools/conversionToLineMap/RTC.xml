@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):Conversion:convToLineMap:2.1.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="conversionToLineMap" rtc:updateDate="2014-10-31T00:20:03+09:00" rtc:creationDate="2014-10-30T23:22:08+09:00" rtc:version="2.1.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="輪郭情報と特徴点を基にラインマップへ変換する" rtc:category="Conversion" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="convToLineMap">
+<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):Conversion:convToLineMap:3.0.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="conversionToLineMap" rtc:updateDate="2014-10-31T00:20:03+09:00" rtc:creationDate="2014-10-30T23:22:08+09:00" rtc:version="3.0.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="輪郭情報と特徴点を基にラインマップへ変換する" rtc:category="Conversion" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="convToLineMap">
         <rtcDoc:Doc rtcDoc:reference="" rtcDoc:license="" rtcDoc:creator="立川将(Tatekawa Masaru)&lt;br/&gt;Email:y09148@shibaura-it.ac.jp" rtcDoc:algorithm="輪郭点データ群と特徴点データ群とを合わせることで凸図形を作成し、UI上で修正を行うことでラインマップに変換する。&lt;br/&gt;ここでのラインマップは「地図の頂点を示す座標群と、その座標同士の関係性」を持つ点と線の情報群を指す" rtcDoc:inout="入力&lt;br/&gt;tempFolderPath[TimedString] - 画像情報送信に用いる一時保存領域のパス&lt;br/&gt;srcImage[CameraImage] - 修復処理を行いたい画像データ&lt;br/&gt;contoursData[TimedShortSeq] - 輪郭検出の結果となるContoursを配列化したデータ&lt;br/&gt;clickPoint[TimedPoint3D] - UIコンポーネントとクリック情報&lt;br/&gt;draggedRect[TimedShortSeq] - ドラッグされて生成された長方形情報&lt;br/&gt;featurePoints[TimedFloatSeq] - 特徴点検出の結果となるKeyPointを配列化したデータ&lt;br/&gt;&lt;br/&gt;出力&lt;br/&gt;modifyImage[CameraImage] - UIコンポーネントへ表示する画像&lt;br/&gt;modifyImagePath[TimedString] - 画像の保存アドレスのパス&lt;br/&gt;compLineMap[TimedShortSeq] - 変換が完了した地図のライン情報" rtcDoc:description="輪郭情報と特徴点を基にラインマップへ変換するコンポーネント"/>
+        <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
+        <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
         <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
         <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
     </rtc:BasicInfo>
@@ -26,14 +28,28 @@
         <rtc:OnModeChanged xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
     </rtc:Actions>
     <rtc:ConfigurationSet>
-        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="modi_type" rtc:unit="" rtc:defaultValue="erase" rtc:type="string" rtc:name="02_modifyType">
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="modi_type" rtc:unit="" rtc:defaultValue="defrag" rtc:type="string" rtc:name="03_modifyType">
             <rtc:Constraint>
                 <rtc:ConstraintUnitType>
                     <rtc:Or>
                         <rtc:Constraint>
                             <rtc:ConstraintUnitType>
                                 <rtc:propertyIsEqualTo rtc:matchCase="false">
-                                    <rtc:Literal>erase</rtc:Literal>
+                                    <rtc:Literal>defrag</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>eraseFigure</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>erasePoint</rtc:Literal>
                                 </rtc:propertyIsEqualTo>
                             </rtc:ConstraintUnitType>
                         </rtc:Constraint>
@@ -44,10 +60,17 @@
                                 </rtc:propertyIsEqualTo>
                             </rtc:ConstraintUnitType>
                         </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>movePoint</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
                     </rtc:Or>
                 </rtc:ConstraintUnitType>
             </rtc:Constraint>
-            <rtcDoc:Doc rtcDoc:constraint="erase - クリックされた一番近い凸図形頂点を、輪郭データ群から消す&lt;br/&gt;add - クリック操作によって隣り合う凸図形頂点を選択してもらい、その二つの頂点の間に新たに頂点を追加する&lt;br/&gt;追加する頂点は特徴点の中から選択する" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="輪郭データ群に対するユーザからの操作の種類を選択する" rtcDoc:defaultValue="erase" rtcDoc:dataname="string"/>
+            <rtcDoc:Doc rtcDoc:constraint="defrag - クリックされた図形の頂点で、重なっている部分を削除する&lt;br/&gt;eraseFigure - クリックされた座標を含む図形の中から、一番小さい図形を削除する　ドラッグされた範囲の中に全頂点が含まれる図形を削除する&lt;br/&gt;erasePoint - クリックされた座標から一番近い頂点を削除する　ドラッグされた範囲に含まれる頂点をすべて削除する&lt;br/&gt;add - クリック操作によって隣り合う凸図形頂点を選択してもらい、その二つの頂点の間に新たに頂点を追加する&lt;br/&gt;追加する頂点は特徴点の中から選択する&lt;br/&gt;ドラッグされて形成された矩形を輪郭図形として加える&lt;br/&gt;movePoint - クリックで選択された頂点座標を、次にクリックされた特徴点の座標に書き換える" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="輪郭データ群に対するユーザからの操作の種類を選択する" rtcDoc:defaultValue="defrag" rtcDoc:dataname="string"/>
             <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
         </rtc:Configuration>
         <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="threshold" rtc:unit="" rtc:defaultValue="3" rtc:type="double" rtc:name="01_threshold">
@@ -60,6 +83,30 @@
             </rtc:Constraint>
             <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="x&gt;=0" rtcDoc:unit="" rtcDoc:description="ラインマップの下地を作成する際の、特徴点を頂点座標として用いるかどうかを調べるための閾値" rtcDoc:defaultValue="3" rtcDoc:dataname="double"/>
             <rtcExt:Properties rtcExt:value="text" rtcExt:name="__widget__"/>
+        </rtc:Configuration>
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="region_fill" rtc:unit="" rtc:defaultValue="ON" rtc:type="string" rtc:name="02_regionFill">
+            <rtc:Constraint>
+                <rtc:ConstraintUnitType>
+                    <rtc:Or>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>ON</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                        <rtc:Constraint>
+                            <rtc:ConstraintUnitType>
+                                <rtc:propertyIsEqualTo rtc:matchCase="false">
+                                    <rtc:Literal>OFF</rtc:Literal>
+                                </rtc:propertyIsEqualTo>
+                            </rtc:ConstraintUnitType>
+                        </rtc:Constraint>
+                    </rtc:Or>
+                </rtc:ConstraintUnitType>
+            </rtc:Constraint>
+            <rtcDoc:Doc rtcDoc:constraint="ON - 塗りつぶす&lt;br/&gt;OFF - 塗りつぶさない" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="輪郭図形の内部を塗りつぶすかどうかを選択する変数" rtcDoc:defaultValue="ON" rtcDoc:dataname="string"/>
+            <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
         </rtc:Configuration>
     </rtc:ConfigurationSet>
     <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="LEFT" rtcExt:variableName="temp_path" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::TimedString" rtc:name="tempFolderPath" rtc:portType="DataInPort">

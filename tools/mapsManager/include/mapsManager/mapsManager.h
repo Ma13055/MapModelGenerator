@@ -290,9 +290,17 @@ class mapsManager
   /*!
    * 完成したラインマップの座標情報群と描画画像を保存する先
    * - Name: string save_space
-   * - DefaultValue: C:\\tmp\\maps\\linemaps
+   * - DefaultValue: C:\\tmp\\makeMapsModel\\maps\\linemaps
    */
   std::string m_save_space;
+  /*!
+   * 正規化処理を飛ばすかどうかを選択するための変数
+   * - Name: string skip_norm
+   * - DefaultValue: NON
+   * - Constraint: NON:正規化処理を行う
+   *               SKIP:正規化処理を飛ばす
+   */
+  std::string m_skip_norm;
 
   // </rtc-template>
 
@@ -471,16 +479,16 @@ class mapsManager
    *              - map1.floor1.size() [1]
    *              - map1.floor1.conv1.size() [2]
    *              - map1.floor1.conv1.p1.x [3]
-   *              	・・・
+   *              ・・・
    *              - map1.floor1.conv1.p3.y [8]
    *              - map1.floor1.conv2.size() [9]
    *              - map1.floor1.conv2.p1.x [10]
-   *              	・・・
+   *              ・・・
    *              - map1.floor1.conv2.p3.y [15]
    *              - map1.floor2.size() [16]
    *              - map1.floor2.conv1.size() [17]
    *              - map1.floor2.conv1.p1.x [18]
-   *              	・・・
+   *              ・・・
    *              - map1.floor2.conv2.p3.y [30]
    *              上記のように30の要素を配列に格納して送る
    *              すなわち[0]~[15]で一つのラインマップとなる
@@ -537,7 +545,7 @@ class mapsManager
 	vector<vector<Point> > map_line;
 
 	string tempName;
-  
+
   // </rtc-template>
 
   // <rtc-template block="private_operation">
