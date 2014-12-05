@@ -532,6 +532,7 @@ class mapsManager
 	bool first_flag;
 	bool normalized_flag;
 	bool convert_line_map_flag;
+	bool check_click_flag;
 	bool remake;
 
 	CameraImage old_comp_img;

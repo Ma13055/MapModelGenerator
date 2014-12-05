@@ -41,6 +41,8 @@ bool equalTimedShortSeq(TimedShortSeq &src,TimedShortSeq &rec);
 void drawContoursImage(vector<vector<Point> > cont,Mat &src_img);
 //与えられた保存先にvector<vector<Point>>型のデータを書き出す
 void writeLineMapData(string str,vector<vector<Point> > &vvp);
+//現在日時を指す文字列を返す
+string makeTimeString();
 
 // Module specification
 // <rtc-template block="module_spec">
@@ -225,6 +227,7 @@ RTC::ReturnCode_t mapsManager::onActivated(RTC::UniqueId ec_id)
 	convert_line_map_flag = false;
 	first_flag = true;
 	remake = false;
+	check_click_flag = false;
 
 	cout<<"mapsManager : onActivate:END"<<endl;
 
@@ -284,6 +287,9 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 			normalized_flag = false;
 			convert_line_map_flag = false;
 			first_flag = true;
+			check_click_flag = false;
+
+			cout<<"mapsManager : Initialize"<<endl;
 
 		}else if(m_rec_flag.data == -1 && receiveEndFlag == false){
 			//受け取り画像が1枚以上ある時
@@ -360,6 +366,8 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 			conf_pict_num = 0;
 
 			normalized_flag = true;
+
+			cout<<"mapsManager : normalize SKIP"<<endl;
 		}
 
 /*------------------------地図モデル生成のための、地図画像の正規化----------------------------*/
@@ -416,11 +424,21 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 						//処理完了を示すフラグ
 						if(click_p.z == 7){
 
+							ostringstream str_sub_img;
+							string time_string = makeTimeString();
+
+							//途中結果の画像を出力
+							str_sub_img << tempName; str_sub_img << "\\sub\\NormalizeMapImage"; str_sub_img << send_pict;
+							str_sub_img << "_" << time_string << ".jpg";
+							makepathString(str_sub_img.str(),compImg);
+
 							//処理後画像を保存するvectorにpush
 							compPictSeq.at(send_pict) = compImg;
 							//処理対象画像のインデックスをすすめる
 							send_pict++;
 							if(send_pict == getPictSeq.size())send_pict = 0;
+
+							cout<<"mapsManager : normalize : nextMap"<<endl;
 
 						//再度処理を示すフラグ
 						}else if(click_p.z == 6){
@@ -428,12 +446,14 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 							setTimestamp(compImg);
 							old_comp_img = compImg;
 							compPictSeq.at(send_pict) = compImg;
+							cout<<"mapsManager : normalize : reprocessing"<<endl;
 
 						//処理結果を消去するフラグ
 						}else if(click_p.z == 3){
 
 							setTimestamp(old_comp_img);
 							compPictSeq.at(send_pict) = old_comp_img;
+							cout<<"mapsManager : normalize : clear"<<endl;
 
 						//全画像に対する処理が終了したことを示すフラグ
 						}else if(click_p.z == 8){
@@ -456,6 +476,9 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 								conf_pict_num = 0;
 
 								normalized_flag = true;
+
+								cout<<"mapsManager : normalize : Comp"<<endl;
+
 							}else{
 								cout<<"mapsManager : Non Full Comp"<<endl;
 							}
@@ -497,7 +520,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 
 				//現在処理に送っている画像の処理結果かどうかを調べる
 				if((m_line_src_img.tm.sec == m_map_line.tm.sec &&
-					m_line_src_img.tm.nsec == m_map_line.tm.nsec) || through_flag == true){
+					m_line_src_img.tm.nsec == m_map_line.tm.nsec) || through_flag){
 
 					//バッファに残っている情報を削除
 					if(first_flag == true){
@@ -506,7 +529,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 					}
 						
 					Mat pre_img(CamToMat(compPictSeq.at(send_pict)).size(), CV_8UC3, Scalar::all(255));
-					if(through_flag == true){
+					if(through_flag){
 						//ラインマップ情報を描画する
 						drawContoursImage(compLineMapSeq.at(send_pict),pre_img);
 					}else{
@@ -526,84 +549,129 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 					m_line_comp_img_path = makepathString(tempName + "\\sub\\comp_pict.jpg",compImg);
 					m_line_comp_img_pathOut.write();
 
-					//UIからのクリックを受け取った場合
-					if(m_click_pointIn.isNew()){
-						m_click_pointIn.read();
+					if(!through_flag){
 
-						Point3D click_p = m_click_point.data;
+						ostringstream str_sub_line;
+						ostringstream str_sub_img;
+						string time_string = makeTimeString();
 
-						//処理完了を示すフラグ
-						if(click_p.z == 7){
-							//処理後ラインマップを保存するvectorにpush
-							compLineMapSeq.at(send_pict) = map_line;
+						//ラインマップの書き出し先を作成
+						str_sub_line << tempName; str_sub_line << "\\sub\\LineMapCordinate"; str_sub_line << send_pict;
+						str_sub_line << "_" << time_string;
+						str_sub_img << tempName; str_sub_img << "\\sub\\LineMapImage"; str_sub_img << send_pict;
+						str_sub_img << "_" << time_string << ".jpg";
+						//結果のラインマップのvector<vector<Point>>を保存先に書き出し
+						writeLineMapData(str_sub_line.str(),map_line);
+						compMapsPath.at(send_pict) = str_sub_line.str();
+						//結果の描画画像を保存先に書き出し
+						makepathString(str_sub_img.str(),compImg);
+					}
 
-							ostringstream str_line;
-							ostringstream str_img;
-							if( PathFileExists( m_save_space.c_str() )){
-								//ラインマップの書き出し先を作成
-								str_line << m_save_space; str_line << "\\LineMapCordinate"; str_line << send_pict;
-								str_img << m_save_space; str_img << "\\LineMapImage"; str_img << send_pict; str_img << ".jpg";
+					check_click_flag = true;
+				}
 
-							}else{
-								//ラインマップの書き出し先を作成
-								str_line << tempName; str_line << "\\sub\\LineMapCordinate"; str_line << send_pict;
-								str_img << tempName; str_img << "\\sub\\LineMapImage"; str_img << send_pict; str_img<<".jpg";
-							}
-							//結果のラインマップのvector<vector<Point>>を保存先に書き出し
-							writeLineMapData(str_line.str(),map_line);
-							compMapsPath.at(send_pict) = str_line.str();
-							//結果の描画画像を保存先に書き出し
-							makepathString(str_img.str(),compImg);
+			}
 
-							//処理対象画像のインデックスをすすめる
-							send_pict++;
-							if(send_pict == getPictSeq.size())send_pict = 0;
+			if(check_click_flag || through_flag){
+				//UIからのクリックを受け取った場合
+				if(m_click_pointIn.isNew()){
+					m_click_pointIn.read();
 
-							first_flag=true;
+					Point3D click_p = m_click_point.data;
 
-						//再度処理を示すフラグ
-						}else if(click_p.z == 6){
-							compLineMapSeq.at(send_pict).clear();
-							setTimestamp(compPictSeq.at(send_pict));
-							first_flag=true;
-						}else if(click_p.z == 3){
-							setTimestamp(compPictSeq.at(send_pict));
-							first_flag=true;
-						}else if(click_p.z == 8){
-							compLineMapSeq.at(send_pict) = map_line;
+					Mat pre_img(CamToMat(compPictSeq.at(send_pict)).size(), CV_8UC3, Scalar::all(255));
+					if(through_flag){
+						//ラインマップ情報を描画する
+						drawContoursImage(compLineMapSeq.at(send_pict),pre_img);
+					}else{
+						//ラインマップ情報を描画する
+						drawContoursImage(map_line,pre_img);
+					}
 
-							ostringstream str_line;
-							ostringstream str_img;
-							if( PathFileExists( m_save_space.c_str() )){
-								//ラインマップの書き出し先を作成
-								str_line << m_save_space; str_line << "\\LineMapCordinate"; str_line << send_pict;
-								str_img << m_save_space; str_img << "\\LineMapImage"; str_img << send_pict; str_img << ".jpg";
+					//CameraImage型に変換
+					CameraImage compImg = MatToCam(pre_img);
 
-							}else{
-								//ラインマップの書き出し先を作成
-								str_line << tempName; str_line << "\\sub\\LineMapCordinate"; str_line << send_pict;
-								str_img << tempName; str_img << "\\sub\\LineMapImage"; str_img << send_pict; str_img << ".jpg";
-							}
-							//結果のラインマップのvector<vector<Point>>を保存先に書き出し
-							writeLineMapData(str_line.str(),map_line);
-							compMapsPath.at(send_pict) = str_line.str();
-							//結果の描画画像を保存先に書き出し
-							imwrite(str_img.str(),CamToMat(compImg));
 
-							//全地図に対してラインマップの生成が完了しているかどうかの確認
-							bool full_comp_flag = true;
-							for(int i=0;i<compLineMapSeq.size();i++){
-								if(compLineMapSeq[i].size() == 0)full_comp_flag = false;
-							}
-							if(full_comp_flag){
-								convert_line_map_flag = true;
-							}else{
-								cout<<"mapsManager : Non Comp LineMaps"<<endl;
-							}
+					//処理完了を示すフラグ
+					if(click_p.z == 7){
+
+						//処理後ラインマップを保存するvectorにpush
+						compLineMapSeq.at(send_pict) = map_line;
+
+						ostringstream str_line;
+						ostringstream str_img;
+						if( PathFileExists( m_save_space.c_str() )){
+							//ラインマップの書き出し先を作成
+							str_line << m_save_space; str_line << "\\LineMapCordinate"; str_line << send_pict;
+							str_img << m_save_space; str_img << "\\LineMapImage"; str_img << send_pict; str_img << ".jpg";
+
+						}else{
+							//ラインマップの書き出し先を作成
+							str_line << tempName; str_line << "\\sub\\LineMapCordinate"; str_line << send_pict;
+							str_img << tempName; str_img << "\\sub\\LineMapImage"; str_img << send_pict; str_img<<".jpg";
 						}
+						//結果のラインマップのvector<vector<Point>>を保存先に書き出し
+						writeLineMapData(str_line.str(),map_line);
+						compMapsPath.at(send_pict) = str_line.str();
+						//結果の描画画像を保存先に書き出し
+						makepathString(str_img.str(),compImg);
+
+						//処理対象画像のインデックスをすすめる
+						send_pict++;
+						if(send_pict == getPictSeq.size()){
+							send_pict = 0;
+						}
+
+						first_flag=true;
+
+						check_click_flag = false;
+
+					//再度処理を示すフラグ
+					}else if(click_p.z == 6){
+						compLineMapSeq.at(send_pict).clear();
+						setTimestamp(compPictSeq.at(send_pict));
+						first_flag=true;
+						check_click_flag = false;
+					}else if(click_p.z == 3){
+						setTimestamp(compPictSeq.at(send_pict));
+						first_flag=true;
+						check_click_flag = false;
+					}else if(click_p.z == 8){
+						compLineMapSeq.at(send_pict) = map_line;
+
+						ostringstream str_line;
+						ostringstream str_img;
+						if( PathFileExists( m_save_space.c_str() )){
+							//ラインマップの書き出し先を作成
+							str_line << m_save_space; str_line << "\\LineMapCordinate"; str_line << send_pict;
+							str_img << m_save_space; str_img << "\\LineMapImage"; str_img << send_pict; str_img << ".jpg";
+
+						}else{
+							//ラインマップの書き出し先を作成
+							str_line << tempName; str_line << "\\sub\\LineMapCordinate"; str_line << send_pict;
+							str_img << tempName; str_img << "\\sub\\LineMapImage"; str_img << send_pict; str_img << ".jpg";
+						}
+						//結果のラインマップのvector<vector<Point>>を保存先に書き出し
+						writeLineMapData(str_line.str(),map_line);
+						compMapsPath.at(send_pict) = str_line.str();
+						//結果の描画画像を保存先に書き出し
+						imwrite(str_img.str(),CamToMat(compImg));
+
+						//全地図に対してラインマップの生成が完了しているかどうかの確認
+						bool full_comp_flag = true;
+						for(int i=0;i<compLineMapSeq.size();i++){
+							if(compLineMapSeq[i].size() == 0)full_comp_flag = false;
+						}
+						if(full_comp_flag){
+							convert_line_map_flag = true;
+						}else{
+							cout<<"mapsManager : Non Comp LineMaps"<<endl;
+						}
+						check_click_flag = false;
 					}
 				}
 			}
+
 		}else if(convert_line_map_flag == true){
 			ostringstream out_path;
 			for(vector<string>::iterator it = compMapsPath.begin(); it != compMapsPath.end();++it){
@@ -889,3 +957,27 @@ void writeLineMapData(string str,vector<vector<Point> > &vvp){
 	}
 }
 
+/**
+ * 現在日時を指す文字列を返す
+ * 
+ * @return string	年_月_日_時_分_秒の文字列を返す
+ */
+string makeTimeString(){
+	ostringstream time_line;
+
+	struct tm *date;
+	time_t now;
+	int year,month,day,hour,minute,second;
+	time(&now);
+	date = localtime(&now);
+	year = date -> tm_year + 1990;
+	month = date ->tm_mon + 1;
+	day = date -> tm_mday;
+	hour = date -> tm_hour;
+	minute = date -> tm_min;
+	second = date -> tm_sec;
+
+	time_line << year << "_" << month << "_" << day << "_" << hour << "_" << minute << "_" << second;
+
+	return time_line.str();
+}

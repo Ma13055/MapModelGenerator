@@ -478,6 +478,10 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 			m_click_pointIn.read();
 
 			repaint_flag = true;
+			//追加に用いるiteratorの宣言
+			vector<vector<Point>>::iterator near_convex_it;
+			vector<Point>::iterator near_point_it;
+
 
 			//ユーザからの処理フラグ情報(z軸データ)による場合分け
 			switch((int)m_click_point.data.z){
@@ -486,11 +490,6 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 			case 1:{
 				//凸図形輪郭データを保持
 				last_line_base = line_base;
-
-				//追加に用いるiteratorの宣言
-				vector<vector<Point>>::iterator near_convex_it;
-				vector<Point>::iterator near_point_it;
-
 
 				//configで修正タイプがdefragと選択されている場合
 				if(m_modi_type == "defrag"){
@@ -525,6 +524,7 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 				//configで修正タイプがaddと選択されている場合
 				}else if(m_modi_type == "add"){
 					move_click_step = 0;
+					first_flag = true;
 					switch(add_click_step){
 					case 0:
 						//クリック座標と一番近い凸図形頂点のiteratorが取得できた場合
@@ -542,7 +542,6 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 					case 1:
 						//前後どちらの頂点が選択されたかを判別し、その点を取得する
 						second_cont_point = getSecondPoint(Point(m_click_point.data.x,m_click_point.data.y),next_cont_point,back_cont_point);
-
 						add_click_step++;
 						break;
 
@@ -595,7 +594,8 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 			}
 			case 2:
 				//ドラッグ処理を受け付けるInPortをNew
-				while(m_drag_rectIn.isNew())m_drag_rectIn.read();
+				while(!m_drag_rectIn.isNew())cout<<"Dragged : WAIT"<<endl;
+				m_drag_rectIn.read();
 				//追加処理の初期化
 				if(m_modi_type != "add")add_click_step = 0;
 				if(m_modi_type != "movePoint")move_click_step = 0;
@@ -615,8 +615,55 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 
 				//configで修正タイプがaddと選択されている場合
 				}else if(m_modi_type == "add"){
-					//ドラッグされた領域を輪郭データ群に追加する
-					if(add_click_step == 0)addDraggedRect(line_base,Rect(m_drag_rect.data[0],m_drag_rect.data[1],m_drag_rect.data[2],m_drag_rect.data[3]));
+					Rect draggedRect = Rect(m_drag_rect.data[0],m_drag_rect.data[1],m_drag_rect.data[2],m_drag_rect.data[3]);
+					
+					if((draggedRect.height*draggedRect.width) > 20){
+						addDraggedRect(line_base,draggedRect);
+						add_click_step = 0;
+					}else{
+						//configで修正タイプがaddと選択されている場合
+						switch(add_click_step){
+						case 0:
+							//クリック座標と一番近い凸図形頂点のiteratorが取得できた場合
+							if(getNearConvexPoint(gray_img,line_base,Point(draggedRect.tl().x,draggedRect.tl().y),near_convex_it,near_point_it)){
+								//凸図形頂点の座標を取得
+								click_cont_point = getVVPoint(line_base,near_convex_it,near_point_it);
+								//凸図形頂点の次の座標を取得
+								next_cont_point = getNextVVPoint(line_base,near_convex_it,near_point_it);
+								//凸図形頂点の前の座標を取得
+								back_cont_point = getBackVVPoint(line_base,near_convex_it,near_point_it);
+
+								add_click_step++;
+							}
+							break;
+						case 1:
+							//前後どちらの頂点が選択されたかを判別し、その点を取得する
+							second_cont_point = getSecondPoint(Point(draggedRect.tl().x,draggedRect.tl().y),next_cont_point,back_cont_point);
+							add_click_step++;
+							break;
+
+						case 2:
+							//追加したい凸図形頂点の座標を特徴点群より取得
+							click_feature_point = getNearPoint(gray_img,keypoints,Point(draggedRect.tl().x,draggedRect.tl().y));
+							//二つの選択頂点の間に指定された特徴点を追加
+							//点i -> 点i+1の関係だったとき
+							if(second_cont_point == next_cont_point){
+								if(getNearConvexPoint(gray_img,line_base,next_cont_point,near_convex_it,near_point_it)){
+									line_base.at(near_convex_it - line_base.begin()).insert(near_point_it,1,click_feature_point);
+								}
+							//点i -> 点i-1の関係だったとき
+							}else{
+								if(getNearConvexPoint(gray_img,line_base,click_cont_point,near_convex_it,near_point_it)){
+									line_base.at(near_convex_it - line_base.begin()).insert(near_point_it,1,click_feature_point);
+								}
+							}
+
+							first_flag = true;
+							add_click_step = 0;
+							break;
+						}
+					}
+
 				}
 
 				break;
@@ -923,7 +970,7 @@ void drawContPointImage(vector<vector<Point> > vvp,Mat &src_img){
  */
 void drawPointVector(vector<Point> vp,Mat &src_img,Scalar color){
 	for(vector<Point>::iterator vp_it = vp.begin(); vp_it!=vp.end(); ++vp_it)
-		circle(src_img, *vp_it, 3, color, -1);
+		circle(src_img, *vp_it, 1, color, -1);
 }
 
 /**
