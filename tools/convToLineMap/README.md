@@ -3,11 +3,6 @@ conversionToLineMap
 このコンポーネントは、地図画像をラインマップに変換するためのコンポーネントです。  
 
 
-概要
---------
-![Alt text]()
-
-
 仕様
 --------
 Windows7 32bit,64bit  
