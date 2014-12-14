@@ -3,11 +3,6 @@ ThreeDimensionViewer
 このコンポーネントは、地図モデルを3次元表示するためのコンポーネントです。  
 
 
-概要
---------
-![Alt text]()
-
-
 仕様
 --------
 Windows7 32bit,64bit  
