@@ -3,11 +3,6 @@ tweakerOfLineMaps
 このコンポーネントは、ラインマップを修正するためのコンポーネントです。  
 
 
-概要
---------
-![Alt text]()
-
-
 仕様
 --------
 Windows7 32bit,64bit  
