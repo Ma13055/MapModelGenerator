@@ -99,8 +99,8 @@ CVFindContoursは ``CVFindContoursComp`` を実行（ ``${prefix}/components/bin
 パラメータ       データ型           デフォルト値     意味
 ================ ================== ================ ====
 01_ImageView     string             OFF              画像表示を選択するための変数
-02_sendDataType  string             Rectangle,Convex 出力するデータタイプを選択する変数
-03_FindContourMode string             EXTERNAL         輪郭検出のモードを選択するための変数
+02_sendDataType  string             NonExchange,Convex 出力するデータタイプを選択する変数
+03_FindContourMode string             LIST             輪郭検出のモードを選択するための変数
 04_FindContourMethod string             NONE             輪郭検出のメソッドを選択するための変数
 05_offset        vector<int>        0,0              オプションのオフセット<br/>各輪郭点はこの値の分だけシフトします
 ================ ================== ================ ====

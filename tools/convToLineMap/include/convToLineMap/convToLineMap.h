@@ -433,6 +433,16 @@ class convToLineMap
    *              進む
    */
   OutPort<RTC::TimedShortSeq> m_map_lineOut;
+  RTC::TimedShort m_step_flag;
+  /*!
+   * 工程の段階をコントロールパネルに表示するためのポート
+   * - Type: TimedShort
+   * - Number: 1
+   * - Semantics: UIに対する操作が認められた場合に、
+   *              そのダイアログをUIで表示することを頼むために使用
+   *              する
+   */
+  OutPort<RTC::TimedShort> m_step_flagOut;
   
   // </rtc-template>
 

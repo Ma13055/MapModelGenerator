@@ -1,9 +1,0 @@
-Dec 04 02:18:23.446 INFO: manager: 1.1.0
-Dec 04 02:18:23.446 INFO: manager: Copyright (C) 2003-2010
-Dec 04 02:18:23.446 INFO: manager:   Noriaki Ando
-Dec 04 02:18:23.446 INFO: manager:   Intelligent Systems Research Institute, AIST
-Dec 04 02:18:23.446 INFO: manager: Manager starting.
-Dec 04 02:18:23.446 INFO: manager: Starting local logging.
-Dec 04 02:18:23.456 INFO: NamingOnCorba: Endpoint for the CORBA naming service (127.0.0.1) is 127.0.0.1.
-Dec 04 02:18:23.456 INFO: NamingManager: NameServer connection succeeded: corba/127.0.0.1
-Dec 04 02:18:23.466 WARNING: ManagerServant: Manager CORBA servant was successfully created.

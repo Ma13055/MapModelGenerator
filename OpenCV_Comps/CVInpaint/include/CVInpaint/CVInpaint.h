@@ -355,6 +355,9 @@ class CVInpaint
 	/*--------その他変数-----------*/
 	 Mat src_mat_img;
 	 Mat inpaint_mat_img;
+	 vector<long> inp_space;
+	 bool change_img_flag;
+	 bool change_inp_space;
   
   // </rtc-template>
 

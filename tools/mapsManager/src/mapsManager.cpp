@@ -51,7 +51,7 @@ static const char* mapsmanager_spec[] =
     "implementation_id", "mapsManager",
     "type_name",         "mapsManager",
     "description",       "地図画像から地図モデルへの変換を管理し、結果の保存を行う",
-    "version",           "1.2.0",
+    "version",           "1.3.0",
     "vendor",            "Masaru Tatekawa(SIT)",
     "category",          "Conversion",
     "activity_type",     "PERIODIC",
@@ -100,7 +100,7 @@ mapsManager::mapsManager(RTC::Manager* manager)
     m_line_src_img_pathOut("makeLineSrcImgPath", m_line_src_img_path),
     m_line_comp_imgOut("compLineImg", m_line_comp_img),
     m_line_comp_img_pathOut("compLineImgPath", m_line_comp_img_path),
-    m_line_mapsOut("lineMaps", m_line_maps),
+    m_step_flagOut("stepFlag", m_step_flag),
     m_line_maps_pathOut("lineMapsPath", m_line_maps_path)
 
     // </rtc-template>
@@ -139,7 +139,7 @@ RTC::ReturnCode_t mapsManager::onInitialize()
   addOutPort("makeLineSrcImgPath", m_line_src_img_pathOut);
   addOutPort("compLineImg", m_line_comp_imgOut);
   addOutPort("compLineImgPath", m_line_comp_img_pathOut);
-  addOutPort("lineMaps", m_line_mapsOut);
+  addOutPort("stepFlag", m_step_flagOut);
   addOutPort("lineMapsPath", m_line_maps_pathOut);
   
   // Set service provider to Ports
@@ -305,6 +305,10 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 				cout<<"mapsManager : END : "<<getPictSeq.size()<<endl;
 				//受け渡し処理終了フラグを立てる
 				receiveEndFlag = true;
+
+				m_step_flag.data = 1;
+				setTimestamp(m_step_flag);
+				m_step_flagOut.write();
 			}
 		}
 	}
@@ -438,6 +442,10 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 							send_pict++;
 							if(send_pict == getPictSeq.size())send_pict = 0;
 
+							m_step_flag.data = 2;
+							setTimestamp(m_step_flag);
+							m_step_flagOut.write();
+
 							cout<<"mapsManager : normalize : nextMap"<<endl;
 
 						//再度処理を示すフラグ
@@ -446,6 +454,11 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 							setTimestamp(compImg);
 							old_comp_img = compImg;
 							compPictSeq.at(send_pict) = compImg;
+
+							m_step_flag.data = 3;
+							setTimestamp(m_step_flag);
+							m_step_flagOut.write();
+
 							cout<<"mapsManager : normalize : reprocessing"<<endl;
 
 						//処理結果を消去するフラグ
@@ -453,6 +466,11 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 
 							setTimestamp(old_comp_img);
 							compPictSeq.at(send_pict) = old_comp_img;
+
+
+							m_step_flag.data = 4;
+							setTimestamp(m_step_flag);
+							m_step_flagOut.write();
 							cout<<"mapsManager : normalize : clear"<<endl;
 
 						//全画像に対する処理が終了したことを示すフラグ
@@ -475,11 +493,21 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 								send_pict = 0;
 								conf_pict_num = 0;
 
+							
+								m_step_flag.data = 5;
+								setTimestamp(m_step_flag);
+								m_step_flagOut.write();
+
 								normalized_flag = true;
 
 								cout<<"mapsManager : normalize : Comp"<<endl;
 
 							}else{
+
+								m_step_flag.data = 6;
+								setTimestamp(m_step_flag);
+								m_step_flagOut.write();
+
 								cout<<"mapsManager : Non Full Comp"<<endl;
 							}
 						}
@@ -609,6 +637,7 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 							//ラインマップの書き出し先を作成
 							str_line << tempName; str_line << "\\sub\\LineMapCordinate"; str_line << send_pict;
 							str_img << tempName; str_img << "\\sub\\LineMapImage"; str_img << send_pict; str_img<<".jpg";
+
 						}
 						//結果のラインマップのvector<vector<Point>>を保存先に書き出し
 						writeLineMapData(str_line.str(),map_line);
@@ -617,10 +646,12 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 						makepathString(str_img.str(),compImg);
 
 						//処理対象画像のインデックスをすすめる
-						send_pict++;
-						if(send_pict == getPictSeq.size()){
-							send_pict = 0;
-						}
+						send_pict = (send_pict + 1)%getPictSeq.size();
+
+						m_step_flag.data = 2;
+						setTimestamp(m_step_flag);
+						m_step_flagOut.write();
+
 
 						first_flag=true;
 
@@ -632,10 +663,18 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 						setTimestamp(compPictSeq.at(send_pict));
 						first_flag=true;
 						check_click_flag = false;
+						m_step_flag.data = 3;
+						setTimestamp(m_step_flag);
+						m_step_flagOut.write();
+
 					}else if(click_p.z == 3){
 						setTimestamp(compPictSeq.at(send_pict));
 						first_flag=true;
 						check_click_flag = false;
+						m_step_flag.data = 4;
+						setTimestamp(m_step_flag);
+						m_step_flagOut.write();
+
 					}else if(click_p.z == 8){
 						compLineMapSeq.at(send_pict) = map_line;
 
@@ -664,8 +703,14 @@ RTC::ReturnCode_t mapsManager::onExecute(RTC::UniqueId ec_id)
 						}
 						if(full_comp_flag){
 							convert_line_map_flag = true;
+							m_step_flag.data = 7;
+							setTimestamp(m_step_flag);
+							m_step_flagOut.write();
 						}else{
 							cout<<"mapsManager : Non Comp LineMaps"<<endl;
+							m_step_flag.data = 6;
+							setTimestamp(m_step_flag);
+							m_step_flagOut.write();
 						}
 						check_click_flag = false;
 					}
@@ -750,6 +795,7 @@ extern "C"
   }
   
 };
+
 
 /**
  * CameraImage型のデータをMat型に変換する

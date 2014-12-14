@@ -128,6 +128,7 @@ draggedRect     InPort      RTC::TimedShortSeq             UIでドラッグさ�
 modifyImage     OutPort     RTC::CameraImage               ユーザの修正処理のためにUI上で表示する画像を送るポート
 modifyImagePath OutPort     RTC::TimedString                ユーザの修正処理のためにUI上で表示する画像のパスを送るポート
 compLineMap     OutPort     RTC::TimedShortSeq             処理の結果完成したラインマップの情報を送るためのポート
+stepFlag        OutPort     RTC::TimedShort                工程の段階をコントロールパネルに表示するためのポート
 =============== =========== ============================== =======
 
 Examples

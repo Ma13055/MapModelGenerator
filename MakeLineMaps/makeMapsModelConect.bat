@@ -47,4 +47,7 @@ rtcon convToLineMap0.rtc:draggedRect controlPanel0.rtc:dragRectangle & ^
 rtcon controlPanel0.rtc:modifyImagePath convToLineMap0.rtc:modifyImagePath & ^
 rtcon controlPanel0.rtc:completeImagePath mapsManager0.rtc:compLineImgPath & ^
 rtcon controlPanel0.rtc:completeImagePath mapsManager0.rtc:compNormImgPath & ^
-rtcon controlPanel0.rtc:srcImagePath mapsManager0.rtc:makeLineSrcImgPath
+rtcon controlPanel0.rtc:srcImagePath mapsManager0.rtc:makeLineSrcImgPath & ^
+rtcon mapsManager0.rtc:stepFlag controlPanel0.rtc:stepFlag & ^
+rtcon convToLineMap0.rtc:stepFlag controlPanel0.rtc:stepFlag & ^
+rtcon imageInpaint0.rtc:stepFlag controlPanel0.rtc:stepFlag

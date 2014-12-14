@@ -179,6 +179,7 @@ public class ThreeDimensionViewerFrame extends JFrame{
 			floor.addItemListener(this);
 			
 			ckbox1 = new JCheckBox("Polygon",true);
+			ckbox1.addItemListener(this);
 			
 			this.add(jl1);				//倍率
 			this.add(scale_text);		//【】
@@ -235,7 +236,7 @@ public class ThreeDimensionViewerFrame extends JFrame{
 		@Override
 		public void itemStateChanged(ItemEvent e) {
 			// TODO Auto-generated method stub
-			if(e.getStateChange() == ItemEvent.SELECTED){
+			if(e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED){
 				model_panel.repaint();
 			}
 		}
@@ -471,37 +472,111 @@ public class ThreeDimensionViewerFrame extends JFrame{
  	        }else{
 	 	        for(int k = start_num; k < end_num; k++){
 			 	    for(int i = 0; i < faces.get(k).size(); i++) {
-		 	        	int[] px = null;
-		 	        	int[] py = null;
+			 	    	int fp_counter = 0;
+		 	        	int[] fpx = null;
+		 	        	int[] fpy = null;
+		 	        	int dp_counter = 0;
+		 	        	int[] dpx = null;
+		 	        	int[] dpy = null;
 		
 			 	    	Face face = faces.get(k).get(i);
 			 	        for(int j = 0; j < face.size(); j++){
-			 				if(px==null) px = new int[1];
-			 				else px = Arrays.copyOf(px, px.length+1);
-			 				px[px.length-1] = vertices.get(k).get(face.v[j]).screenX;
+			 	        	if(face.polygon_flag){
+				 				if(fpx==null) fpx = new int[1];
+				 				else fpx = Arrays.copyOf(fpx, fpx.length+1);
+				 				fpx[fpx.length-1] = vertices.get(k).get(face.v[j]).screenX;
+				 				
+				 				if(fpy==null) fpy = new int[1];
+				 				else fpy = Arrays.copyOf(fpy, fpy.length+1);
+				 				fpy[fpy.length-1] = vertices.get(k).get(face.v[j]).screenY;
+				 				fp_counter++;
+			 	        	}
+			 	        	if(dpx==null) dpx = new int[1];
+			 				else dpx = Arrays.copyOf(dpx, dpx.length+1);
+			 				dpx[dpx.length-1] = vertices.get(k).get(face.v[j]).screenX;
 			 				
-			 				if(py==null) py = new int[1];
-			 				else py = Arrays.copyOf(py, py.length+1);
-			 				py[py.length-1] = vertices.get(k).get(face.v[j]).screenY;
+			 				if(dpy==null) dpy = new int[1];
+			 				else dpy = Arrays.copyOf(dpy, dpy.length+1);
+			 				dpy[dpy.length-1] = vertices.get(k).get(face.v[j]).screenY;
+			 				dp_counter++;
 			 	        }
 			 	        
 			 	        g.setColor(Color.green);
-			 	        g.fillPolygon(px, py, face.size());
+			 	        if(fp_counter > 0)g.fillPolygon(fpx, fpy, fp_counter);
 			 	        
 			 	        g.setColor(Color.black);
-			 	        g.drawPolygon(px, py, face.size());
+			 	       if(dp_counter > 0)g.drawPolygon(dpx, dpy, dp_counter);
 			 	    }
 		        }
  	        }
  	        
 	 	}
 
+	 	private void clickFigure(Point click_p){
+	 		int floor_num = button_panel.floor.getSelectedIndex()-1;
+	 		ArrayList<Vertex> floor_vertices = vertices.get(floor_num);
+	 		ArrayList<Face> floor_face = faces.get(floor_num);
+	 		ArrayList<Integer> index = new ArrayList<Integer>();
+	 		ArrayList<Double> area = new ArrayList<Double>();
+	 		
+	 		//与えられた座標が、輪郭点データ群から成される凸図形の中に入っているかを調べ
+	 		//入っている場合はその凸図形の面積と、その凸図形のiteratorを保持
+	 		for (int i = 0;i<floor_face.size();i++){
+	 			Face sub_face = floor_face.get(i);
+
+	 			int cn = 0;
+
+	 			for(int j = 0; j < sub_face.size() ; j++){
+	 				int fp = j; int ep = (j+1)%sub_face.size();
+	 				
+	 				Vertex fv = floor_vertices.get(sub_face.v[fp]);
+	 				Vertex ev = floor_vertices.get(sub_face.v[ep]);
+
+	 				// 上向きの辺。点Pがy軸方向について、始点と終点の間にある。ただし、終点は含まない。(ルール1)
+	 				if( ((fv.screenY <= click_p.y) && (ev.screenY > click_p.y))
+	 				// 下向きの辺。点Pがy軸方向について、始点と終点の間にある。ただし、始点は含まない。(ルール2)
+	 					|| ((fv.screenY > click_p.y) && (ev.screenY <= click_p.y)) ){
+	 				// ルール1,ルール2を確認することで、ルール3も確認できている。
+	 	            
+	 					// 辺は点pよりも右側にある。ただし、重ならない。(ルール4)
+	 					// 辺が点pと同じ高さになる位置を特定し、その時のxの値と点pのxの値を比較する。
+	 					double vt = (click_p.y - fv.screenY) / (ev.screenY - fv.screenY);
+	 					if(click_p.x < (fv.screenX + (vt * (ev.x - fv.x)))) ++cn;
+	 				}
+	 			}
+	 			if(cn%2 == 1){
+	 				index.add(i);
+	 				double a = 0;
+	 				for(int j = sub_face.size(),u = 0 ; j-->0 ; u= j){
+	 					a += (floor_vertices.get(sub_face.v[j]).screenX - floor_vertices.get(sub_face.v[u]).screenX)*(floor_vertices.get(sub_face.v[j]).screenY + floor_vertices.get(sub_face.v[u]).screenY);
+	 				}
+	 				a = Math.abs(0.5*a);
+	 				area.add(a);
+	 			}
+	 		}
+
+	 		double maxArea = 0;
+	 		int maxIndex = 0;
+	 		for(int i=0;i<index.size();i++){
+	 			if(i==0)maxArea = area.get(i);
+	 			if(maxArea < area.get(i)){
+	 				maxArea = area.get(i);
+	 				maxIndex = index.get(i);
+	 			}
+	 		}
+
+	 		if(floor_face.get(maxIndex).polygon_flag){
+	 			faces.get(floor_num).get(maxIndex).polygon_flag = false;
+	 		}
+	 	}
 	 	
 		@Override
 		public void mouseClicked(MouseEvent arg0) {
 			// TODO Auto-generated method stub
 			mouse_click_pos.setLocation(arg0.getX(), arg0.getY());
-//			System.out.println("CLICKED : " + mouse_click_pos.x + "," + mouse_click_pos.y);	
+			
+			if(button_panel.floor.getSelectedIndex() != 0)clickFigure(mouse_click_pos);
+			
 		}
 
 		@Override
@@ -581,13 +656,16 @@ public class ThreeDimensionViewerFrame extends JFrame{
 	public class Face {
 		public int[] v;
 		public double z;	//奥行
+		boolean polygon_flag;
 
 		public Face(){
 			v=null;
+			polygon_flag = true;
 		}
 		
 		public Face(int[] v_array){
 			v = v_array.clone();
+			polygon_flag = true;
 		}
 		
 		public void add(int v0){

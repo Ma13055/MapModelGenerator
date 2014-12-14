@@ -128,7 +128,7 @@ makeLineSrcImg  OutPort     RTC::CameraImage               ラインマップに
 makeLineSrcImgPath OutPort     RTC::TimedString               ラインマップに変換したい正規化済み地図画像データのパスを送るポート
 compLineImg     OutPort     RTC::CameraImage               ラインマップの座標群情報を描画した画像を送るためのポート
 compLineImgPath OutPort     RTC::TimedString               ラインマップの座標群情報を描画した画像のパスを送るためのポート
-lineMaps        OutPort     RTC::TimedShortSeq             全地図画像に対するラインマップの座標群情報を送るためのポート
+stepFlag        OutPort     RTC::TimedShort                工程の段階をコントロールパネルに表示するためのポート
 lineMapsPath    OutPort     RTC::TimedString               ラインマップの保存データへのパスを、全地図のパス一括で送るためのポート
 =============== =========== ============================== ====
 

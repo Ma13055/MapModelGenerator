@@ -16,12 +16,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.imageio.ImageIO;
-
 import sun.swing.MenuItemLayoutHelper.RectSize;
 
 import RTC.CameraImage;
 import RTC.Point3D;
 import RTC.Time;
+import RTC.TimedShort;
 import RTC.TimedString;
 import RTC.TimedPoint3D;
 import RTC.TimedShortSeq;
@@ -93,6 +93,10 @@ public class controlPanelImpl extends DataFlowComponentBase {
         m_comp_img_path_val = new TimedString();
         m_comp_img_path = new DataRef<TimedString>(m_comp_img_path_val);
         m_completeImagePathIn = new InPort<TimedString>("completeImagePath", m_comp_img_path);
+        m_step_flag_val = new TimedShort();
+        m_step_flag = new DataRef<TimedShort>(m_step_flag_val);
+        m_stepFlagIn = new InPort<TimedShort>("stepFlag", m_step_flag);
+        
         m_open_file_path_val = new TimedString();
         m_open_file_path = new DataRef<TimedString>(m_open_file_path_val);
         m_openFilePathOut = new OutPort<TimedString>("openFilePath", m_open_file_path);
@@ -129,6 +133,7 @@ public class controlPanelImpl extends DataFlowComponentBase {
         addInPort("modifyImagePath", m_modifyImagePathIn);
         addInPort("completeImage", m_completeImageIn);
         addInPort("completeImagePath", m_completeImagePathIn);
+        addInPort("stepFlag", m_stepFlagIn);
         
         // Set OutPort buffer
         addOutPort("openFilePath", m_openFilePathOut);
@@ -298,6 +303,59 @@ public class controlPanelImpl extends DataFlowComponentBase {
     		m_completeImagePathIn.read();
     		comp_img = readPath(m_comp_img_path.v);
     		frame.comp.setSelected(true);
+    	}
+    	
+    	if(m_stepFlagIn.isNew()){
+    		m_stepFlagIn.read();
+    		
+    		switch(m_step_flag.v.data){
+    		case 1:
+    			frame.popInfoMessage("画像の読み込みが完了しました");
+    			break;
+    		case 2:
+    			frame.popInfoMessage("処理を確定し、次の画像の処理へ進みます");
+    			break;
+    		case 3:
+    			frame.popInfoMessage("処理を確定し、同じ画像の処理を行います");
+    			break;
+    		case 4:
+    			frame.popInfoMessage("処理結果を消去し、同じ画像の処理を行います");
+    			break;
+    		case 5:
+    			frame.popInfoMessage("全画像への処理が完了しました\n次の工程へ進みます");
+    			break;
+    		case 6:
+    			frame.popErrMessage("全ての画像の処理が終了していないため、\n次の工程へ進むことができませんでした");
+    			break;
+    		case 7:
+    			frame.popInfoMessage("全画像へのラインマップ生成が完了しました\n次の工程へ進みます");
+    			this.get_owned_contexts()[0].deactivate_component(this.getObjRef());
+    			break;
+    		case 8:
+    			frame.popInfoMessage("現在の修正情報を一時保存しました");
+    			break;
+    		case 9:
+    			frame.popInfoMessage("修正情報を初期化します");
+    			break;
+    		case 10:
+    			frame.popInfoMessage("輪郭データの修正を終了します");
+    			break;
+    		case 11:
+    			frame.popInfoMessage("輪郭データの出力が終了しました\n修正を開始してください");
+    			break;
+    		case 12:
+    			frame.popInfoMessage("修復処理の修正を終了します");
+    			break;
+    		case 13:
+    			frame.popInfoMessage("ラインマップの下地が生成されました\n修正を開始してください");    			
+    			break;
+    		case 14:
+    			frame.popInfoMessage("ラインマップの修正を終了します");    			
+    			break;
+    		case 15:
+    			frame.popInfoMessage("輪郭データを用いた修復処理が完了しました\n修復処理の修正を行ってください");
+    			break;
+    		}
     	}
     	
     	if(frame.defo.isSelected() == true && defo_img != null){
@@ -509,6 +567,17 @@ public class controlPanelImpl extends DataFlowComponentBase {
      * - Semantics: 処理結果の画像のパス
      */
     protected InPort<TimedString> m_completeImagePathIn;
+
+
+    protected TimedShort m_step_flag_val;
+    protected DataRef<TimedShort> m_step_flag;
+    /*!
+     * 処理経過のダイアログを表示するためのフラグを受け取るポート
+     * - Type: TimedShort
+     * - Number: 1
+     * - Semantics: 処理結果のフラグ
+     */
+    protected InPort<TimedShort> m_stepFlagIn;
 
     
     // </rtc-template>

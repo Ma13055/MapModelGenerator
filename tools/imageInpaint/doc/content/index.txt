@@ -132,6 +132,7 @@ inpaintSrcImage OutPort     RTC::CameraImage               修復処理に用い
 inpaintMaskImage OutPort     RTC::CameraImage               修復処理に用いるマスク画像を送るポート
 inpaintMaskArea OutPort     RTC::TimedShortSeq             マスク画像作成に用いる座標群を送るポート
 processedImage  OutPort     RTC::CameraImage               すべての処理が終わった画像を送るポート
+stepFlag        OutPort     RTC::TimedShort                工程の段階をコントロールパネルに表示するためのポート
 =============== =========== ============================== =======
 
 Examples

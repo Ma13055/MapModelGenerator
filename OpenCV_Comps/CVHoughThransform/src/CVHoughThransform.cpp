@@ -166,6 +166,7 @@ RTC::ReturnCode_t CVHoughThransform::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVHoughThransform::onActivated(RTC::UniqueId ec_id)
 {
+	cout<<"CVHoughThransform : onActivated : START"<<endl;
 	/*--------------パラメータの初期化--------------*/
 	//ポートの初期化
 	while(m_src_imgIn.isNew())m_src_imgIn.read();
@@ -200,6 +201,7 @@ RTC::ReturnCode_t CVHoughThransform::onActivated(RTC::UniqueId ec_id)
 	lines_p.clear();	//線情報が入る変数
 	lines_s.clear();	//線情報が入る変数
 
+	cout<<"CVHoughThransform : onActivated : END"<<endl;
   return RTC::RTC_OK;
 }
 
@@ -209,8 +211,8 @@ RTC::ReturnCode_t CVHoughThransform::onActivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVHoughThransform::onDeactivated(RTC::UniqueId ec_id)
 {
-	destroyWindow("receiveImage");
-	destroyWindow("houghLineView");
+	destroyWindow("CVHoughThransform : receiveImage");
+	destroyWindow("CVHoughThransform : houghLineView");
 
 	return RTC::RTC_OK;
 }
@@ -243,7 +245,7 @@ RTC::ReturnCode_t CVHoughThransform::onExecute(RTC::UniqueId ec_id)
 		//threImageのCameraImageをMat型に変換し、
 		//グレースケールでない場合はグレースケルへ変換する
 		if(thre_img.pixels.length() != 0){
-			cout<<"makeThreImg"<<endl;
+			cout<<"CVHoughThransform : makeThreImg"<<endl;
 
 			//CameraImage型からMat型へ変換
 			gray_img = CamToMat(thre_img).clone();
@@ -263,14 +265,14 @@ RTC::ReturnCode_t CVHoughThransform::onExecute(RTC::UniqueId ec_id)
 		//srcImageのCameraImageをMat型に変換し、
 		//threImageのデータがない場合はグレースケールへ変換しthreImageの変数へ上書きする
 		if(old_img.pixels.length() != 0){
-			cout<<"makeSrcImg"<<endl;
+			cout<<"CVHoughThransform : makeSrcImg"<<endl;
 
 			//CameraImage型からMat型へ変換
 			src_img = CamToMat(old_img).clone();	
 			
 			//二値画像が受け取れていない場合
 			if(gray_img.data == 0){
-				cout<<"makeThreImg"<<endl;
+				cout<<"CVHoughThransform : makeThreImg"<<endl;
 
 				//二値の変数に上書き
 				cvtColor(src_img,gray_img,CV_RGB2GRAY);
@@ -355,16 +357,16 @@ RTC::ReturnCode_t CVHoughThransform::onExecute(RTC::UniqueId ec_id)
 		//画像情報をウィンドウに表示
 		if(m_img_view == "ON"){
 			if(src_img.data != 0){
-				namedWindow("receiveImage",1);
-				imshow("receiveImage", src_img);
+				namedWindow("CVHoughThransform : receiveImage",1);
+				imshow("CVHoughThransform : receiveImage", src_img);
 			}
 			if(pre_img.data != 0){
-				namedWindow("houghLineView",1);
-				imshow("houghLineView", pre_img);
+				namedWindow("CVHoughThransform : houghLineView",1);
+				imshow("CVHoughThransform : houghLineView", pre_img);
 			}
 		}else{
-			destroyWindow("receiveImage");
-			destroyWindow("houghLineView");
+			destroyWindow("CVHoughThransform : receiveImage");
+			destroyWindow("CVHoughThransform : houghLineView");
 		}
 	}
 
@@ -393,8 +395,8 @@ RTC::ReturnCode_t CVHoughThransform::onError(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVHoughThransform::onReset(RTC::UniqueId ec_id)
 {
-	destroyWindow("receiveImage");
-	destroyWindow("houghLineView");
+	destroyWindow("CVHoughThransform : receiveImage");
+	destroyWindow("CVHoughThransform : houghLineView");
 
 	return RTC::RTC_OK;
 }
@@ -529,7 +531,7 @@ bool equalCamImg(CameraImage &src_img,CameraImage &rec_img){
 		src_img.width	!= rec_img.width	||
 		src_img.pixels.length() != rec_img.pixels.length()){
 			src_img = rec_img;
-			cout<<"chImg"<<endl;
+			cout<<"CVHoughThransform : chImg"<<endl;
 			return false;
 	}else{
 		return true;

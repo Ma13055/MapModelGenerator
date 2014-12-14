@@ -147,7 +147,7 @@ RTC::ReturnCode_t CVInpaint::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVInpaint::onActivated(RTC::UniqueId ec_id)
 {
-	cout<<"onActivate:START"<<endl;
+	cout<<"CVInpaint : onActivate : START"<<endl;
 	while(m_src_imgIn.isNew()) m_src_imgIn.read();
 	while(m_mask_imgIn.isNew()) m_mask_imgIn.read();
 	while(m_mask_rectIn.isNew()) m_mask_rectIn.read();
@@ -160,8 +160,11 @@ RTC::ReturnCode_t CVInpaint::onActivated(RTC::UniqueId ec_id)
 	/*--------その他変数-----------*/
 	src_mat_img = Mat();
 	inpaint_mat_img = Mat();
+	inp_space = m_inp_space;
+	change_inp_space = false;
+	change_img_flag = false;
 
-	cout<<"onActivate:END"<<endl;
+	cout<<"CVInpaint : onActivate : END"<<endl;
 
   return RTC::RTC_OK;
 }
@@ -172,9 +175,9 @@ RTC::ReturnCode_t CVInpaint::onActivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVInpaint::onDeactivated(RTC::UniqueId ec_id)
 {
-	destroyWindow("InpaintSourceImage");
-	destroyWindow("InpaintMaskImage");
-	destroyWindow("InpaintImage");
+	destroyWindow("CVInpaint : InpaintSourceImage");
+	destroyWindow("CVInpaint : InpaintMaskImage");
+	destroyWindow("CVInpaint : InpaintImage");
 
   return RTC::RTC_OK;
 }
@@ -185,6 +188,24 @@ RTC::ReturnCode_t CVInpaint::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVInpaint::onExecute(RTC::UniqueId ec_id)
 {
+	Mat mask_mat_img = Mat();
+
+	//コンフィギュで指定されている修復領域が変更された場合
+	if(m_inp_space != inp_space){
+		inp_space = m_inp_space;
+		change_inp_space = true;
+	}
+
+	if(change_inp_space){
+		//修復対象画像と同じ大きさの黒画像を作成
+		mask_mat_img = Mat::zeros(src_mat_img.size(), CV_8U);
+
+		//受け取った領域データをrect型に変換
+		Rect mask_rect = Rect(inp_space.at(0),inp_space.at(1),inp_space.at(2),inp_space.at(3));
+		//受け取った領域を黒画像中に白く描画
+		rectangle( mask_mat_img, mask_rect.tl(), mask_rect.br(), Scalar::all(255), CV_FILLED, 8, 0 );
+	}
+
 	//入力ポートdefaultImageのデータを読み込む
 	if(m_src_imgIn.isNew()){
 		m_src_imgIn.read();
@@ -194,14 +215,12 @@ RTC::ReturnCode_t CVInpaint::onExecute(RTC::UniqueId ec_id)
 
 			//NewされたCameraImageをMat型に変換
 			src_mat_img = CamToMat(m_src_img).clone();	//受信した画像
-		
+			change_img_flag = true;
 		}
 	}
 
-	Mat mask_mat_img = Mat();
-
 	//入力ポートmaskImageのデータを読み込む
-	if(m_mask_imgIn.isNew() && src_mat_img.data != 0){
+	if(m_mask_imgIn.isNew() && src_mat_img.data != 0 && change_img_flag){
 		m_mask_imgIn.read();
 
 		//前回までのmaskImageと違うデータの場合は上書き
@@ -211,7 +230,7 @@ RTC::ReturnCode_t CVInpaint::onExecute(RTC::UniqueId ec_id)
 	}
 
 	//マスク画像の受け取りがなく、修正領域のみ受け取った場合
-	if(m_mask_rectIn.isNew() && src_mat_img.data != 0 && mask_mat_img.data == 0){
+	if(m_mask_rectIn.isNew() && src_mat_img.data != 0 && mask_mat_img.data == 0 && change_img_flag){
 		m_mask_rectIn.read();
 
 		//受け取った領域からマスク画像を作成
@@ -227,7 +246,7 @@ RTC::ReturnCode_t CVInpaint::onExecute(RTC::UniqueId ec_id)
 	}
 
 	//maskImageが存在する場合
-	if(mask_mat_img.data != 0){
+	if(mask_mat_img.data != 0 && change_img_flag){
 		//コンフィギュのflagデータによる場合分け
 		//flagデータを用いてinpaintを行う
 		if(m_inp_flag == "INPAINT_NS")inpaint(src_mat_img, mask_mat_img, inpaint_mat_img, m_inp_radius, INPAINT_NS);
@@ -237,28 +256,29 @@ RTC::ReturnCode_t CVInpaint::onExecute(RTC::UniqueId ec_id)
 		m_inp_img = MatToCam(inpaint_mat_img);
 		//タイムスタンプを修復元画像のものに上書き
 		m_inp_img.tm = src_cam_img.tm;
+		change_img_flag = false;
 	}
 
 	//画像データをウィンドウに表示
 	if(m_img_view == "ON"){
 		if(src_mat_img.data != 0){
-			namedWindow("InpaintSourceImage",1);
-			imshow("InpaintSourceImage",src_mat_img);
+			namedWindow("CVInpaint : InpaintSourceImage",1);
+			imshow("CVInpaint : InpaintSourceImage",src_mat_img);
 		}
 
 		if(mask_mat_img.data != 0){
-			namedWindow("InpaintMaskImage",1);
-			imshow("InpaintMaskImage",mask_mat_img);
+			namedWindow("CVInpaint : InpaintMaskImage",1);
+			imshow("CVInpaint : InpaintMaskImage",mask_mat_img);
 		}
 
 		if(inpaint_mat_img.data != 0){
-			namedWindow("InpaintImage",1);
-			imshow("InpaintImage",inpaint_mat_img);
+			namedWindow("CVInpaint : InpaintImage",1);
+			imshow("CVInpaint : InpaintImage",inpaint_mat_img);
 		}
 	}else{
-		destroyWindow("InpaintSourceImage");
-		destroyWindow("InpaintMaskImage");
-		destroyWindow("InpaintImage");
+		destroyWindow("CVInpaint : InpaintSourceImage");
+		destroyWindow("CVInpaint : InpaintMaskImage");
+		destroyWindow("CVInpaint : InpaintImage");
 	}
 
 	if(m_inp_img.pixels.length() != 0){
@@ -290,9 +310,9 @@ RTC::ReturnCode_t CVInpaint::onError(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVInpaint::onReset(RTC::UniqueId ec_id)
 {
-	destroyWindow("InpaintSourceImage");
-	destroyWindow("InpaintMaskImage");
-	destroyWindow("InpaintImage");
+	destroyWindow("CVInpaint : InpaintSourceImage");
+	destroyWindow("CVInpaint : InpaintMaskImage");
+	destroyWindow("CVInpaint : InpaintImage");
 
   return RTC::RTC_OK;
 }

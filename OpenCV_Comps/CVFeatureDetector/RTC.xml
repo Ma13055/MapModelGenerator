@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):Image Processing:CVFeatureDetector:1.1.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="CVFeatureDetector" rtc:updateDate="2014-10-30T13:22:27+09:00" rtc:creationDate="2014-10-30T13:22:27+09:00" rtc:version="1.1.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="与えられた画像に特徴点検出を行う" rtc:category="Image Processing" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="CVFeatureDetector">
+<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):Image Processing:CVFeatureDetector:1.2.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="CVFeatureDetector" rtc:updateDate="2014-10-30T13:22:27+09:00" rtc:creationDate="2014-10-30T13:22:27+09:00" rtc:version="1.2.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="与えられた画像に特徴点検出を行う" rtc:category="Image Processing" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="CVFeatureDetector">
         <rtcDoc:Doc rtcDoc:reference="" rtcDoc:license="" rtcDoc:creator="立川将(Tatekawa Masaru)&lt;br/&gt;Email:y09148@shibaura-it.ac.jp" rtcDoc:algorithm="入力画像に対して特徴検出を行い、結果を描画しつつTimedFloatSeqに配列化して送る&lt;br/&gt;入力やコンフィギュの値を常に確認し、どこか一つでも変更があるとエッジ再検出を行う&lt;br/&gt;出力ポートに送信されるタイミングは、検出後一度きり" rtcDoc:inout="入力&lt;br/&gt;srcImage[CameraImage] - 特徴点検出の対象画像を受け取る&lt;br/&gt;&lt;br/&gt;出力&lt;br/&gt;featurePoint [TimedFloatSeq] - 特徴点検出の結果となるKeyPointを配列化したデータを送る" rtcDoc:description="入力された画像に対して、コンフィギュレーションパラメータで選択されたメソッドやアダプタ、入力された閾値を用いて特徴点検出を行うコンポーネント"/>
+        <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
         <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
     </rtc:BasicInfo>
     <rtc:Actions>
@@ -53,7 +54,7 @@
             <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="画像表示の選択" rtcDoc:defaultValue="OFF" rtcDoc:dataname="string"/>
             <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
         </rtc:Configuration>
-        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="feature_method" rtc:unit="" rtc:defaultValue="FAST" rtc:type="string" rtc:name="02_Method">
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="feature_method" rtc:unit="" rtc:defaultValue="Good" rtc:type="string" rtc:name="02_Method">
             <rtc:Constraint>
                 <rtc:ConstraintUnitType>
                     <rtc:Or>

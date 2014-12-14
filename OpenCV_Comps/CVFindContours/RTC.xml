@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):Image Processing:CVFindContours:1.2.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="CVFindContours" rtc:updateDate="2014-11-02T03:04:10.938+09:00" rtc:creationDate="2014-11-01T15:48:55+09:00" rtc:version="1.2.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="与えられた二値画像に対して輪郭検出を行う" rtc:category="Image Processing" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="CVFindContours">
+<rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:Masaru Tatekawa(SIT):Image Processing:CVFindContours:1.3.0" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="CVFindContours" rtc:updateDate="2014-11-04T17:25:10+09:00" rtc:creationDate="2014-11-01T15:48:55+09:00" rtc:version="1.3.0" rtc:vendor="Masaru Tatekawa(SIT)" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="1000.0" rtc:description="与えられた二値画像に対して輪郭検出を行う" rtc:category="Image Processing" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="UNIQUE" rtc:name="CVFindContours">
         <rtcDoc:Doc rtcDoc:reference="" rtcDoc:license="" rtcDoc:creator="立川将(Tatekawa Masaru)&lt;br/&gt;Email:y09148@shibaura-it.ac.jp" rtcDoc:algorithm="入力二値画像に対して輪郭検出を行い、結果を描画しつつTimedShortSeqに配列化して送る&lt;br/&gt;入力やコンフィギュの値を常に確認し、どこか一つでも変更があると輪郭の再検出を行う&lt;br/&gt;出力ポートに送信されるタイミングは、検出後一度きり" rtcDoc:inout="入力&lt;br/&gt;srcImage[CameraImage] - 輪郭検出の結果を描画しその変換閾値などを確認するために用いる二値化前のカラー画像データ&lt;br/&gt;thresholdImage[CameraImage] - 輪郭検出の対象二値画像&lt;br/&gt;&lt;br/&gt;出力&lt;br/&gt;contoursData[TimedShortSeq] - 輪郭検出の結果となるContoursを配列化したデータ&lt;br/&gt;contoursRectangles [TimedShortSeq] - 長方形化した輪郭データの配列&lt;br/&gt;contoursConvex [TimedShortSeq] - 凸図形化した輪郭データの配列" rtcDoc:description="入力された二値画像に対して、コンフィギュレーションパラメータで与えられた検出法や閾値を用いて輪郭検出を行うコンポーネント"/>
+        <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
         <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
     </rtc:BasicInfo>
     <rtc:Actions>
@@ -53,7 +54,7 @@
             <rtcDoc:Doc rtcDoc:constraint="" rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="画像表示を選択するための変数" rtcDoc:defaultValue="OFF" rtcDoc:dataname="string"/>
             <rtcExt:Properties rtcExt:value="radio" rtcExt:name="__widget__"/>
         </rtc:Configuration>
-        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="send_type" rtc:unit="" rtc:defaultValue="Rectangle,Convex" rtc:type="string" rtc:name="02_sendDataType">
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="send_type" rtc:unit="" rtc:defaultValue="NonExchange,Convex" rtc:type="string" rtc:name="02_sendDataType">
             <rtc:Constraint>
                 <rtc:ConstraintUnitType>
                     <rtc:Or>
@@ -84,7 +85,7 @@
             <rtcDoc:Doc rtcDoc:constraint="NonExchange - 無変換の輪郭点データを出力する&lt;br/&gt;Rectangle - 輪郭点データを基に長方形データを作成し出力する&lt;br/&gt;Convex - 輪郭点データを基に凸図形データを作成し出力する&lt;br/&gt;Convex - " rtcDoc:range="" rtcDoc:unit="" rtcDoc:description="出力するデータタイプを選択する変数" rtcDoc:defaultValue="Rectangle,Convex" rtcDoc:dataname="string"/>
             <rtcExt:Properties rtcExt:value="checkbox" rtcExt:name="__widget__"/>
         </rtc:Configuration>
-        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="fc_mode" rtc:unit="" rtc:defaultValue="EXTERNAL" rtc:type="string" rtc:name="03_FindContourMode">
+        <rtc:Configuration xsi:type="rtcExt:configuration_ext" rtcExt:variableName="fc_mode" rtc:unit="" rtc:defaultValue="LIST" rtc:type="string" rtc:name="03_FindContourMode">
             <rtc:Constraint>
                 <rtc:ConstraintUnitType>
                     <rtc:Or>

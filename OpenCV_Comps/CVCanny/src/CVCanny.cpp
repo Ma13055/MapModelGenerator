@@ -41,7 +41,7 @@ static const char* cvcanny_spec[] =
     "implementation_id", "CVCanny",
     "type_name",         "CVCanny",
     "description",       "与えられた画像にエッジ検出を行う",
-    "version",           "1.1.0",
+    "version",           "1.2.0",
     "vendor",            "Masaru Tatekawa(SIT)",
     "category",          "Image Processing",
     "activity_type",     "PERIODIC",
@@ -54,7 +54,7 @@ static const char* cvcanny_spec[] =
     "conf.default.02_threshold1", "50",
     "conf.default.03_threshold2", "200",
     "conf.default.04_apertureSize", "3",
-    "conf.default.05_L2gradient", "false",
+    "conf.default.05_L2gradient", "true",
     // Widget
     "conf.__widget__.01_ImageView", "radio",
     "conf.__widget__.02_threshold1", "text",
@@ -65,7 +65,7 @@ static const char* cvcanny_spec[] =
     "conf.__constraints__.01_ImageView", "(ON,OFF)",
     "conf.__constraints__.02_threshold1", "x>0",
     "conf.__constraints__.03_threshold2", "x>0",
-    "conf.__constraints__.04_apertureSize", "x>0",
+    "conf.__constraints__.04_apertureSize", "x>1",
     "conf.__constraints__.05_L2gradient", "(true,false)",
     ""
   };
@@ -118,7 +118,7 @@ RTC::ReturnCode_t CVCanny::onInitialize()
   bindParameter("02_threshold1", m_thre1, "50");
   bindParameter("03_threshold2", m_thre2, "200");
   bindParameter("04_apertureSize", m_size, "3");
-  bindParameter("05_L2gradient", m_gradient, "false");
+  bindParameter("05_L2gradient", m_gradient, "true");
   // </rtc-template>
   
   return RTC::RTC_OK;
@@ -151,6 +151,7 @@ RTC::ReturnCode_t CVCanny::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVCanny::onActivated(RTC::UniqueId ec_id)
 {
+	cout<<"CVCanny : onActivated : START"<<endl;
 	/*--------------パラメータの初期化--------------*/
 	//ポートの初期化
 	while(m_src_imgIn.isNew())m_src_imgIn.read();
@@ -169,7 +170,10 @@ RTC::ReturnCode_t CVCanny::onActivated(RTC::UniqueId ec_id)
 	pre_img = Mat();
 	remake = true;		//再検出フラグ
 
+	cout<<"CVCanny : onActivated : END"<<endl;
+
 	return RTC::RTC_OK;
+
 }
 
 /*!
@@ -178,10 +182,10 @@ RTC::ReturnCode_t CVCanny::onActivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVCanny::onDeactivated(RTC::UniqueId ec_id)
 {
-	destroyWindow("cannyImageView");
-	destroyWindow("receiveImage");
+	destroyWindow("CVCanny : ImageView");
+	destroyWindow("CVCanny : receiveImage");
 
-	return RTC::RTC_OK;
+  return RTC::RTC_OK;
 }
 
 /*!
@@ -222,9 +226,27 @@ RTC::ReturnCode_t CVCanny::onExecute(RTC::UniqueId ec_id)
 		if(remake == true){
 
 			Mat gray_copy_img = gray_img.clone();
+
+			//エッジ検出のためのエラー処理
+			if(size > 1 && size%2 == 0)	size += 1;
+
 			//エッジ検出
-			if(gradient == "false")Canny( gray_copy_img, gray_copy_img, thre1, thre2, size );
-			else Canny( gray_copy_img, gray_copy_img, thre1, thre2, size, true);
+			if(gradient == "false"){
+				Canny( gray_copy_img,	//エッジ検出の入力画像
+					   gray_copy_img,	//エッジ検出結果画像
+					   thre1,			//thre1,2の内、小さい方の値がエッジの接続の閾値
+					   thre2,			//大きい方の値が明確なエッジの初期セグメントを検出の閾値
+					   size				//Sobel() オペレータのアパーチャサイズ
+					   );
+			}else{
+				Canny( gray_copy_img,
+					   gray_copy_img,
+					   thre1,
+					   thre2,
+					   size,
+					   true				//精度の高いノルムを用いる
+					   );
+			}
 
 			//描画画像を作成
 			pre_img = gray_copy_img.clone();
@@ -241,16 +263,16 @@ RTC::ReturnCode_t CVCanny::onExecute(RTC::UniqueId ec_id)
 		//画像情報をウィンドウに表示
 		if(m_img_view == "ON"){
 			if(src_img.data != 0){
-				namedWindow("receiveImage",1);
-				imshow("receiveImage", src_img);
+				namedWindow("CVCanny : receiveImage",1);
+				imshow("CVCanny : receiveImage", src_img);
 			}
 			if(pre_img.data != 0){
-				namedWindow("cannyImageView",1);
-				imshow("cannyImageView", pre_img);
+				namedWindow("CVCanny : ImageView",1);
+				imshow("CVCanny : ImageView", pre_img);
 			}
 		}else{
-			destroyWindow("receiveImage");
-			destroyWindow("cannyImageView");
+			destroyWindow("CVCanny : receiveImage");
+			destroyWindow("CVCanny : ImageView");
 		}
 
 	}
@@ -280,8 +302,8 @@ RTC::ReturnCode_t CVCanny::onError(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVCanny::onReset(RTC::UniqueId ec_id)
 {
-	destroyWindow("cannyImageView");
-	destroyWindow("receiveImage");
+	destroyWindow("CVCanny : ImageView");
+	destroyWindow("CVCanny : receiveImage");
 
   return RTC::RTC_OK;
 }
@@ -447,7 +469,7 @@ bool equalCamImg(CameraImage &src_img,CameraImage &rec_img){
 		src_img.width	!= rec_img.width	||
 		src_img.pixels.length() != rec_img.pixels.length()){
 			src_img = rec_img;
-			cout<<"chImg"<<endl;
+			cout<<"CVCanny : chImg"<<endl;
 			return false;
 	}else{
 		return true;

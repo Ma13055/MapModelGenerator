@@ -165,6 +165,7 @@ RTC::ReturnCode_t CVImgThreshold::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVImgThreshold::onActivated(RTC::UniqueId ec_id)
 {
+	cout<<"CVImgThreshold : onActivated : START"<<endl;
 	/*--------------パラメータの初期化--------------*/
 	while(m_rec_imgIn.isNew()) m_rec_imgIn.read();
 
@@ -182,6 +183,7 @@ RTC::ReturnCode_t CVImgThreshold::onActivated(RTC::UniqueId ec_id)
 	pre_img = Mat();
 	remake = true;		//再検出フラグ
 
+	cout<<"CVImgThreshold : onActivated : END"<<endl;
   return RTC::RTC_OK;
 }
 
@@ -191,8 +193,8 @@ RTC::ReturnCode_t CVImgThreshold::onActivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVImgThreshold::onDeactivated(RTC::UniqueId ec_id)
 {
-	destroyWindow("receiveImage");
-	destroyWindow("thresholdImage");
+	destroyWindow("CVImgThreshold : receiveImage");
+	destroyWindow("CVImgThreshold : thresholdImage");
   return RTC::RTC_OK;
 }
 
@@ -376,16 +378,16 @@ RTC::ReturnCode_t CVImgThreshold::onExecute(RTC::UniqueId ec_id)
 
 		if(m_img_view == "ON"){
 			if(src_img.data != 0){
-				namedWindow("receiveImage",1);
-				imshow("receiveImage", src_img);
+				namedWindow("CVImgThreshold : receiveImage",1);
+				imshow("CVImgThreshold : receiveImage", src_img);
 			}
 			if(pre_img.data != 0){
-				namedWindow("thresholdImage",1);
-				imshow("thresholdImage", pre_img);
+				namedWindow("CVImgThreshold : thresholdImage",1);
+				imshow("CVImgThreshold : thresholdImage", pre_img);
 			}
 		}else{
-			destroyWindow("receiveImage");
-			destroyWindow("thresholdImage");
+			destroyWindow("CVImgThreshold : receiveImage");
+			destroyWindow("CVImgThreshold : thresholdImage");
 		}
 	}
 	waitKey(1);
@@ -413,8 +415,8 @@ RTC::ReturnCode_t CVImgThreshold::onError(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVImgThreshold::onReset(RTC::UniqueId ec_id)
 {
-	destroyWindow("receiveImage");
-	destroyWindow("thresholdImage");
+	destroyWindow("CVImgThreshold : receiveImage");
+	destroyWindow("CVImgThreshold : thresholdImage");
 
   return RTC::RTC_OK;
 }
@@ -674,7 +676,7 @@ bool equalCamImg(CameraImage &src_img,CameraImage &rec_img){
 		src_img.width	!= rec_img.width	||
 		src_img.pixels.length() != rec_img.pixels.length()){
 			src_img = rec_img;
-			cout<<"chImg"<<endl;
+			cout<<"CVImgThreshold : chImg"<<endl;
 			return false;
 	}else{
 		return true;

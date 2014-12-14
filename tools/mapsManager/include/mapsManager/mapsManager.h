@@ -455,45 +455,16 @@ class mapsManager
    * - Semantics: ラインマップを成す座標群情報を描画した画像のパス
    */
   OutPort<RTC::TimedString> m_line_comp_img_pathOut;
-  RTC::TimedShortSeq m_line_maps;
+  RTC::TimedShort m_step_flag;
   /*!
-   * 全地図画像に対するラインマップの座標群情報を送るためのポート
-   * - Type: TimedShortSeq
-   * - Number: 全図形数*(1+図形の持つ凸数*2)
-   * - Semantics: ラインマップは構成する頂点の座標<Point>を
-   *              一つの図形にまとめた<vector<Point>が
-   *              複数個存在する<vector<vector<Point>>という形式で
-   *              変換される
-   *              複数地図画像に対してこれら処理を行うことで
-   *              vector<vector<vector<Point>>>型で全地図画像のライ
-   *              ンマップを保持することができる
-   *              これら情報を一括で送信するためにTimedShortSeq型に
-   *              変換する必要がある
-   *              Point p1,p2,p3からなるVector<Point>
-   *              conv1,conv2を持つ
-   *              vector<vector<Point>> floor1,floor2を持つ
-   *              全地図画像のラインマップvector<vector<vector<Point>
-   *              > map1
-   *              に対しての変換例を以下に示す
-   *              - map1.size() [0]
-   *              - map1.floor1.size() [1]
-   *              - map1.floor1.conv1.size() [2]
-   *              - map1.floor1.conv1.p1.x [3]
-   *              ・・・
-   *              - map1.floor1.conv1.p3.y [8]
-   *              - map1.floor1.conv2.size() [9]
-   *              - map1.floor1.conv2.p1.x [10]
-   *              ・・・
-   *              - map1.floor1.conv2.p3.y [15]
-   *              - map1.floor2.size() [16]
-   *              - map1.floor2.conv1.size() [17]
-   *              - map1.floor2.conv1.p1.x [18]
-   *              ・・・
-   *              - map1.floor2.conv2.p3.y [30]
-   *              上記のように30の要素を配列に格納して送る
-   *              すなわち[0]~[15]で一つのラインマップとなる
+   * 工程の段階をコントロールパネルに表示するためのポート
+   * - Type: TimedShort
+   * - Number: 1
+   * - Semantics: UIに対する操作が認められた場合に、
+   *              そのダイアログをUIで表示することを頼むために使用
+   *              する
    */
-  OutPort<RTC::TimedShortSeq> m_line_mapsOut;
+  OutPort<RTC::TimedShort> m_step_flagOut;
   RTC::TimedString m_line_maps_path;
   /*!
    * ラインマップの保存データへのパスを、全地図のパス一括で送るため
@@ -525,7 +496,7 @@ class mapsManager
 
  private:
   // <rtc-template block="private_attribute">
-	int send_pict;
+  	int send_pict;
 	int conf_pict_num;
 
 	bool receiveEndFlag;

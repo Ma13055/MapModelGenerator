@@ -5,7 +5,7 @@
  * @date $Date$
  *
  * @author 立川将(Tatekawa Masaru)
- * Email:y09148@shibaura-it.ac.jptt
+ * Email:y09148@shibaura-it.ac.jp
  *
  * $Id$
  */
@@ -36,7 +36,6 @@ bool equalCamImg(CameraImage &src_img,CameraImage &rec_img);
 void makeContours( Mat &binImg, vector<vector<Point>> &cont
 					, string mode, string method, Point offset );
 
-
 // Module specification
 // <rtc-template block="module_spec">
 static const char* cvfindcontours_spec[] =
@@ -44,7 +43,7 @@ static const char* cvfindcontours_spec[] =
     "implementation_id", "CVFindContours",
     "type_name",         "CVFindContours",
     "description",       "与えられた二値画像に対して輪郭検出を行う",
-    "version",           "1.2.0",
+    "version",           "1.3.0",
     "vendor",            "Masaru Tatekawa(SIT)",
     "category",          "Image Processing",
     "activity_type",     "PERIODIC",
@@ -54,8 +53,8 @@ static const char* cvfindcontours_spec[] =
     "lang_type",         "compile",
     // Configuration variables
     "conf.default.01_ImageView", "OFF",
-    "conf.default.02_sendDataType", "Rectangle,Convex",
-    "conf.default.03_FindContourMode", "EXTERNAL",
+    "conf.default.02_sendDataType", "NonExchange,Convex",
+    "conf.default.03_FindContourMode", "LIST",
     "conf.default.04_FindContourMethod", "NONE",
     "conf.default.05_offset", "0,0",
     // Widget
@@ -123,8 +122,8 @@ RTC::ReturnCode_t CVFindContours::onInitialize()
   // <rtc-template block="bind_config">
   // Bind variables and configuration variable
   bindParameter("01_ImageView", m_img_view, "OFF");
-  bindParameter("02_sendDataType", m_send_type, "Rectangle,Convex");
-  bindParameter("03_FindContourMode", m_fc_mode, "EXTERNAL");
+  bindParameter("02_sendDataType", m_send_type, "NonExchange,Convex");
+  bindParameter("03_FindContourMode", m_fc_mode, "LIST");
   bindParameter("04_FindContourMethod", m_fc_method, "NONE");
   bindParameter("05_offset", m_offset, "0,0");
   // </rtc-template>
@@ -159,6 +158,7 @@ RTC::ReturnCode_t CVFindContours::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVFindContours::onActivated(RTC::UniqueId ec_id)
 {
+	cout<<"CVFindContours : onActivated : START"<<endl;
 	/*--------------パラメータの初期化--------------*/
 	//ポートの初期化
 	while(m_src_imgIn.isNew()) m_src_imgIn.read();
@@ -182,9 +182,10 @@ RTC::ReturnCode_t CVFindContours::onActivated(RTC::UniqueId ec_id)
 	src_img = Mat();
 	draw_img = Mat();
 	remake = true;	//再検出フラグ
-//	vector<vector<Point>>  contours;	//輪郭データ群が入る変数
 	cont_rect.clear();	//輪郭点を変換した長方形
 	cont_convex.clear();	//輪郭点を変換した凸角形
+
+	cout<<"CVFindContours : onActivated : END"<<endl;
 
   return RTC::RTC_OK;
 }
@@ -195,10 +196,10 @@ RTC::ReturnCode_t CVFindContours::onActivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVFindContours::onDeactivated(RTC::UniqueId ec_id)
 {
-	destroyWindow("receiveImage");
-	destroyWindow("contoursView");
+	destroyWindow("CVFindContours : receiveImage");
+	destroyWindow("CVFindContours : contoursView");
 
-	return RTC::RTC_OK;
+  return RTC::RTC_OK;
 }
 
 /*!
@@ -247,7 +248,7 @@ RTC::ReturnCode_t CVFindContours::onExecute(RTC::UniqueId ec_id)
 		//threImageのCameraImageをMat型に変換し、
 		//グレースケールでない場合はグレースケルへ変換する
 		if(thre_img.pixels.length() != 0){
-			cout<<"makeThreImg"<<endl;
+			cout<<"CVFindContours : makeThreImg"<<endl;
 
 			//CameraImage型からMat型へ変換
 			gray_img = CamToMat(thre_img).clone();
@@ -267,14 +268,14 @@ RTC::ReturnCode_t CVFindContours::onExecute(RTC::UniqueId ec_id)
 		//srcImageのCameraImageをMat型に変換し、
 		//threImageのデータがない場合はグレースケールへ変換しthreImageの変数へ上書きする
 		if(old_img.pixels.length() != 0){
-			cout<<"makeSrcImg"<<endl;
+			cout<<"CVFindContours : makeSrcImg"<<endl;
 
 			//CameraImage型からMat型へ変換
 			src_img = CamToMat(old_img).clone();	
 			
 			//二値画像が受け取れていない場合
 			if(gray_img.data == 0){
-				cout<<"makeThreImg"<<endl;
+				cout<<"CVFindContours : makeThreImg"<<endl;
 
 				//二値の変数に上書き
 				cvtColor(src_img,gray_img,CV_RGB2GRAY);
@@ -416,23 +417,23 @@ RTC::ReturnCode_t CVFindContours::onExecute(RTC::UniqueId ec_id)
 		//処理画像をウィンドウに表示
 		if(m_img_view == "ON"){
 			if(src_img.data != 0){
-				namedWindow("receiveImage",1);
-				imshow("receiveImage", src_img);
+				namedWindow("CVFindContours : receiveImage",1);
+				imshow("CVFindContours : receiveImage", src_img);
 			}
 			if(draw_img.data != 0){
-				namedWindow("contoursView",1);
-				imshow("contoursView", draw_img);
+				namedWindow("CVFindContours : contoursView",1);
+				imshow("CVFindContours : contoursView", draw_img);
 			}
 		}else{
-			destroyWindow("receiveImage");
-			destroyWindow("contoursView");
+			destroyWindow("CVFindContours : receiveImage");
+			destroyWindow("CVFindContours : contoursView");
 		}
 
 	}
 
 	waitKey(1);
 
-	return RTC::RTC_OK;
+  return RTC::RTC_OK;
 }
 
 /*
@@ -455,8 +456,8 @@ RTC::ReturnCode_t CVFindContours::onError(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVFindContours::onReset(RTC::UniqueId ec_id)
 {
-	destroyWindow("receiveImage");
-	destroyWindow("contoursView");
+	destroyWindow("CVFindContours : receiveImage");
+	destroyWindow("CVFindContours : contoursView");
 
   return RTC::RTC_OK;
 }
@@ -591,7 +592,7 @@ bool equalCamImg(CameraImage &src_img,CameraImage &rec_img){
 		src_img.width	!= rec_img.width	||
 		src_img.pixels.length() != rec_img.pixels.length()){
 			src_img = rec_img;
-			cout<<"chImg"<<endl;
+			cout<<"CVFindContours : chImg"<<endl;
 			return false;
 	}else{
 		return true;
@@ -609,7 +610,7 @@ bool equalCamImg(CameraImage &src_img,CameraImage &rec_img){
  * @return void					
  */
 void makeContours( Mat &grayImg, vector<vector<Point>> &cont, string mode, string method, Point offset ){
-	cout<<"makeContours : START"<<endl;
+	cout<<"CVFindContours : makeContours : START"<<endl;
 
 	Mat binImg = grayImg.clone();
 
@@ -636,7 +637,7 @@ void makeContours( Mat &grayImg, vector<vector<Point>> &cont, string mode, strin
 		offset		//	オフセット
 	);
 
-	cout<<"makeContours : END"<<endl;
+	cout<<"CVFindContours : makeContours : END"<<endl;
 	return;
 }
 

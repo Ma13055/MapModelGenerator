@@ -38,6 +38,7 @@ using namespace RTC;
 using namespace cv;
 using namespace std;
 
+
 /*!
  * @class imageInpaint
  * @brief 輪郭情報を用いた画像修復を行う
@@ -455,6 +456,16 @@ class imageInpaint
    * - Semantics: 輪郭情報を用いて修復処理が完了した画像
    */
   OutPort<RTC::CameraImage> m_proc_imgOut;
+  RTC::TimedShort m_step_flag;
+  /*!
+   * 工程の段階をコントロールパネルに表示するためのポート
+   * - Type: TimedShort
+   * - Number: 1
+   * - Semantics: UIに対する操作が認められた場合に、
+   *              そのダイアログをUIで表示することを頼むために使用
+   *              する
+   */
+  OutPort<RTC::TimedShort> m_step_flagOut;
   
   // </rtc-template>
 

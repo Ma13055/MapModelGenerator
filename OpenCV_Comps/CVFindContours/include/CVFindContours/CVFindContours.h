@@ -266,7 +266,7 @@ class CVFindContours
   /*!
    * 出力するデータタイプを選択する変数
    * - Name: string send_type
-   * - DefaultValue: Rectangle,Convex
+   * - DefaultValue: NonExchange,Convex
    * - Constraint: NonExchange - 無変換の輪郭点データを出力する
    *               Rectangle -
    *               輪郭点データを基に長方形データを作成し出力する
@@ -278,7 +278,7 @@ class CVFindContours
   /*!
    * 輪郭検出のモードを選択するための変数
    * - Name: string fc_mode
-   * - DefaultValue: EXTERNAL
+   * - DefaultValue: LIST
    * - Constraint: CV_RETR_EXTERNAL -
    *               最も外側の輪郭のみを抽出する
    *               CV_RETR_LIST -
@@ -457,7 +457,7 @@ class CVFindContours
 	vector<Rect> cont_rect;	//輪郭点を変換した長方形
 	vector<vector<Point> > cont_convex;	//輪郭点を変換した凸角形
 	bool checkbox_flag[3];	//チェックボックスのフラグ配列
-
+  
   // </rtc-template>
 
   // <rtc-template block="private_operation">

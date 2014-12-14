@@ -256,6 +256,8 @@ class CVCanny
   std::string m_img_view;
   /*!
    * ヒステリシスが存在する処理の一番目の閾値
+   * thre1 と thre2 の内，小さい方の値をエッジの接続に利用
+   * 大きい方の値を明確なエッジの初期セグメントを検出するのに利用
    * - Name: double thre1
    * - DefaultValue: 50
    * - Range: x>0
@@ -279,7 +281,7 @@ class CVCanny
    * 画像勾配の強度を求めるために，より精度の高いL_2ノルムを利用す
    * るか，L_1ノルムで十分（L2gridient=false）かを指定します．
    * - Name: string gradient
-   * - DefaultValue: false
+   * - DefaultValue: true
    */
   std::string m_gradient;
 
@@ -330,8 +332,6 @@ class CVCanny
 
  private:
   // <rtc-template block="private_attribute">
-	/*--------コンフィギュの前回値を持つ変数-----------*/
-
 	//Cannyのパラメータ
 	double thre1;
 	double thre2;

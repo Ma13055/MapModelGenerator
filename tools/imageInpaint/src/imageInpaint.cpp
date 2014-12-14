@@ -41,7 +41,6 @@ void eraceDraggedRect(vector<vector<Point>> &cont,Rect dragged_rect);
 //画像の保存を行い、そのパスを返す
 TimedString makepathString(String str,CameraImage src);
 
-
 // Module specification
 // <rtc-template block="module_spec">
 static const char* imageinpaint_spec[] =
@@ -49,7 +48,7 @@ static const char* imageinpaint_spec[] =
     "implementation_id", "imageInpaint",
     "type_name",         "imageInpaint",
     "description",       "輪郭情報を用いた画像修復を行う",
-    "version",           "1.2.0",
+    "version",           "1.3.0",
     "vendor",            "Masaru Tatekawa(SIT)",
     "category",          "UI",
     "activity_type",     "PERIODIC",
@@ -92,7 +91,8 @@ imageInpaint::imageInpaint(RTC::Manager* manager)
     m_inpt_src_imgOut("inpaintSrcImage", m_inpt_src_img),
     m_inpt_mask_imgOut("inpaintMaskImage", m_inpt_mask_img),
     m_mask_areaOut("inpaintMaskArea", m_mask_area),
-    m_proc_imgOut("processedImage", m_proc_img)
+    m_proc_imgOut("processedImage", m_proc_img),
+    m_step_flagOut("stepFlag", m_step_flag)
 
     // </rtc-template>
 {
@@ -123,10 +123,12 @@ RTC::ReturnCode_t imageInpaint::onInitialize()
   // Set OutPort buffer
   addOutPort("modifyImage", m_modi_imgOut);
   addOutPort("modifyImagePath", m_modi_img_pathOut);
+  addOutPort("stepFlag", m_step_flagOut);
   addOutPort("inpaintSrcImage", m_inpt_src_imgOut);
   addOutPort("inpaintMaskImage", m_inpt_mask_imgOut);
   addOutPort("inpaintMaskArea", m_mask_areaOut);
   addOutPort("processedImage", m_proc_imgOut);
+
   
   // Set service provider to Ports
   
@@ -225,6 +227,7 @@ RTC::ReturnCode_t imageInpaint::onActivated(RTC::UniqueId ec_id)
 	inpt_it_convex = cont_convex.begin();
 
 	cout<<"imageInpaint : onActivated : END"<<endl;
+
   return RTC::RTC_OK;
 }
 
@@ -373,6 +376,10 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 		inpaint_end_flag = false;
 		inpaint_modify_flag = false;
 		write_data_flag = false;
+
+		m_step_flag.data = 11;
+		setTimestamp(m_step_flag);
+		m_step_flagOut.write();
 	}
 
 	//輪郭データ抽出が完了し、ユーザによる修正が終わっていない場合
@@ -380,9 +387,11 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 		
 		//クリック入力のバッファの初期化
 		if(first_flag == true){
-			while(m_click_pointIn.isNew())m_click_pointIn.read();
-			while(m_drag_rectIn.isNew())m_drag_rectIn.read();
+			while(m_click_pointIn.isNew()) m_click_pointIn.read();
+			while(m_drag_rectIn.isNew()) m_drag_rectIn.read();
+			cout<<"imageInapint : clear Buf"<<endl;
 			first_flag = false;
+
 		}
 
 		//ユーザのクリック情報をNew
@@ -418,6 +427,11 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 				}else{
 					reset_cont_convex = cont_convex;
 				}
+
+				m_step_flag.data = 8;
+				setTimestamp(m_step_flag);
+				m_step_flagOut.write();
+
 				break;
 
 			//戻るボタンが押されたことを表すフラグ
@@ -439,6 +453,10 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 				}else{
 					cont_convex = reset_cont_convex;
 				}
+
+				m_step_flag.data = 9;
+				setTimestamp(m_step_flag);
+				m_step_flagOut.write();
 
 				break;
 
@@ -466,6 +484,9 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 					}
 				}
 
+				m_step_flag.data = 10;
+				setTimestamp(m_step_flag);
+				m_step_flagOut.write();
 				cout<<"imageInpaint : ModifyFIN"<<endl;
 
 				break;
@@ -615,6 +636,11 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 						inpaint_modify_flag = false;
 						old_inpt_img = inpt_cam_img;
 						reset_inpt_img = inpt_cam_img;
+
+						m_step_flag.data = 15;
+						setTimestamp(m_step_flag);
+						m_step_flagOut.write();
+
 					}
 				}
 			}
@@ -628,24 +654,17 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 
 		//クリック入力のバッファの初期化
 		if(first_flag == true){
-			while(1){
-				if(!m_click_pointIn.isNew())break;
-				else m_click_pointIn.read();
-			}
-			while(1){
-				if(!m_drag_rectIn.isNew())break;
-				else m_drag_rectIn.isNew();
-			}
+			while(m_click_pointIn.isNew()) m_click_pointIn.read();
+			while(m_drag_rectIn.isNew()) m_drag_rectIn.read();
+			cout<<"imageInpaint : clear Buf"<<endl;
 			first_flag = false;
+
 		}
 
 		//ユーザのクリック情報をNew
 		if(m_click_pointIn.isNew()){
 			m_click_pointIn.read();
 			
-			//修復基画像を保持する変数に受け取った画像を上書き
-//			inpt_cam_img = m_inpt_img;
-
 			//ユーザからの処理フラグ情報(z軸データ)による場合分け
 			switch((int)m_click_point.data.z){
 			
@@ -663,6 +682,11 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 				//現在画像を、inpaint基画像変数に上書き
 				reset_inpt_img = inpt_cam_img;
 				write_data_flag = true;
+
+				m_step_flag.data = 8;
+				setTimestamp(m_step_flag);
+				m_step_flagOut.write();
+
 				break;
 
 
@@ -671,14 +695,22 @@ RTC::ReturnCode_t imageInpaint::onExecute(RTC::UniqueId ec_id)
 				//未処理のinpaint基画像を、現在の画像に上書き
 				inpt_cam_img = reset_inpt_img;
 				write_data_flag = true;
-				
+
+				m_step_flag.data = 9;
+				setTimestamp(m_step_flag);
+				m_step_flagOut.write();				
+
 				break;
 			}
 
 			//修正処理完了を示すフラグ
 			case 5:
-				//輪郭修正が終了したフラグを立てる
+				//修正が終了したフラグを立てる
 				inpaint_modify_flag = true;
+
+				m_step_flag.data = 12;
+				setTimestamp(m_step_flag);
+				m_step_flagOut.write();
 
 				cout<<"imageInpaint : ModifyFIN"<<endl;
 
@@ -825,8 +857,6 @@ extern "C"
   }
   
 };
-
-
 
 /**
  * CameraImage型のデータをMat型に変換する
@@ -1049,7 +1079,7 @@ bool eraceClickRect(Mat img,vector<vector<Point>> &cont,Point3D p){
             
 				// 辺は点pよりも右側にある。ただし、重ならない。(ルール4)
 				// 辺が点pと同じ高さになる位置を特定し、その時のxの値と点pのxの値を比較する。
-				double vt = (p.y - r[fp].y) / (r[ep].y - r[fp].y);
+				double vt = (double)(p.y - r[fp].y) / (double)(r[ep].y - r[fp].y);
 				if(p.x < (r[fp].x + (vt * (r[ep].x - r[fp].x)))) ++cn;
 			}
 		}
@@ -1157,3 +1187,5 @@ TimedString makepathString(String str,CameraImage src){
 
 	return ts;
 }
+
+

@@ -40,7 +40,7 @@ static const char* cvfeaturedetector_spec[] =
     "implementation_id", "CVFeatureDetector",
     "type_name",         "CVFeatureDetector",
     "description",       "与えられた画像に特徴点検出を行う",
-    "version",           "1.1.0",
+    "version",           "1.2.0",
     "vendor",            "Masaru Tatekawa(SIT)",
     "category",          "Image Processing",
     "activity_type",     "PERIODIC",
@@ -50,7 +50,7 @@ static const char* cvfeaturedetector_spec[] =
     "lang_type",         "compile",
     // Configuration variables
     "conf.default.01_ImageView", "OFF",
-    "conf.default.02_Method", "FAST",
+    "conf.default.02_Method", "Good",
     "conf.default.03_Adapter", "NON",
     "conf.default.04_FAST-threshold", "1",
     "conf.default.05_Good-maxCorners", "1000",
@@ -100,8 +100,8 @@ static const char* cvfeaturedetector_spec[] =
     "conf.__widget__.24_Dynamic_maxIters", "text",
     // Constraints
     "conf.__constraints__.01_ImageView", "(ON,OFF)",
-    "conf.__constraints__.02_Method", "(FAST, Good, GoodHarris, Star, SIFT, SURF, MSER)",
-    "conf.__constraints__.03_Adapter", "(NON, Grid, Pyramid, Dynamic)",
+    "conf.__constraints__.02_Method", "(FAST,Good,GoodHarris,Star,SIFT,SURF,MSER)",
+    "conf.__constraints__.03_Adapter", "(NON,Grid,Pyramid,Dynamic)",
     "conf.__constraints__.04_FAST-threshold", "x>0",
     "conf.__constraints__.05_Good-maxCorners", "x>0",
     "conf.__constraints__.06_Good-qualityLevel", "x>0",
@@ -171,17 +171,17 @@ RTC::ReturnCode_t CVFeatureDetector::onInitialize()
   // <rtc-template block="bind_config">
   // Bind variables and configuration variable
   bindParameter("01_ImageView", m_img_view, "OFF");
-  bindParameter("02_Method", m_feature_method, "FAST");
+  bindParameter("02_Method", m_feature_method, "Good");
   bindParameter("03_Adapter", m_adapt, "NON");
   bindParameter("04_FAST-threshold", m_fast_threshold, "1");
   bindParameter("05_Good-maxCorners", m_good_max, "1000");
   bindParameter("06_Good-qualityLevel", m_good_level, "0.01");
   bindParameter("07_Good-minDistance", m_good_min, "1");
   bindParameter("08_Good-blockSize", m_good_block, "3");
-  bindParameter("09_Good-k", m_good_k, "0,04");
+  bindParameter("09_Good-k", m_good_k, "0.04");
   bindParameter("10_Star-maxSize", m_star_max, "16");
   bindParameter("11_Star-responseThreshold", m_star_response, "30");
-  bindParameter("12_Star-lineThresholdProjected", m_star_project, "10");
+  bindParameter("12_Star-lineThresholdProjected", m_star_projected, "10");
   bindParameter("13_Star-lineThresholdBinarized", m_star_binarized, "8");
   bindParameter("14_Star-suppressNonmaxSize", m_star_nonmax, "5");
   bindParameter("15_SIFT-threshold", m_sift_threshold, "0.05");
@@ -226,6 +226,7 @@ RTC::ReturnCode_t CVFeatureDetector::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVFeatureDetector::onActivated(RTC::UniqueId ec_id)
 {
+	cout<<"CVFeatureDetector : onActivated : START"<<endl;
 	/*--------------パラメータの初期化--------------*/
 	//ポートの初期化
 	while(m_src_imgIn.isNew())m_src_imgIn.read();
@@ -249,7 +250,7 @@ RTC::ReturnCode_t CVFeatureDetector::onActivated(RTC::UniqueId ec_id)
 	//Starのパラメータ
 	star_max		= m_star_max;
 	star_response	= m_star_response;
-	star_project	= m_star_project;
+	star_projected	= m_star_projected;
 	star_binarized	= m_star_binarized;
 	star_nonmax		= m_star_nonmax;
 
@@ -281,6 +282,8 @@ RTC::ReturnCode_t CVFeatureDetector::onActivated(RTC::UniqueId ec_id)
 	src_img = Mat();
 	gray_img = Mat();
 
+	cout<<"CVFeatureDetector : onActivated : END"<<endl;
+
   return RTC::RTC_OK;
 }
 
@@ -290,8 +293,8 @@ RTC::ReturnCode_t CVFeatureDetector::onActivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVFeatureDetector::onDeactivated(RTC::UniqueId ec_id)
 {
-	destroyWindow("receiveImage");
-	destroyWindow("featurePointsView");
+	destroyWindow("CVFeatureDetector : receiveImage");
+	destroyWindow("CVFeatureDetector : featurePointsView");
 
   return RTC::RTC_OK;
 }
@@ -313,10 +316,10 @@ RTC::ReturnCode_t CVFeatureDetector::onExecute(RTC::UniqueId ec_id)
 
 			//受け取った画像をウィンドウに表示
 			if(m_img_view == "ON"){
-				namedWindow("receiveImage",1);
-				imshow("receiveImage", src_img);
+				namedWindow("CVFeatureDetector : receiveImage",1);
+				imshow("CVFeatureDetector : receiveImage", src_img);
 			}else{
-				destroyWindow("receiveImage");
+				destroyWindow("CVFeatureDetector : receiveImage");
 			}
 		
 			//受け取った画像をグレースケールに変換
@@ -418,7 +421,7 @@ RTC::ReturnCode_t CVFeatureDetector::onExecute(RTC::UniqueId ec_id)
 			//Starのパラメータを更新
 			if(!equalPara(star_max,m_star_max))remake =true;
 			if(!equalPara(star_response,m_star_response))remake =true;
-			if(!equalPara(star_project,m_star_project))remake =true;
+			if(!equalPara(star_projected,m_star_projected))remake =true;
 			if(!equalPara(star_binarized,m_star_binarized))remake =true;
 			if(!equalPara(star_nonmax,m_star_nonmax))remake =true;
 
@@ -431,7 +434,7 @@ RTC::ReturnCode_t CVFeatureDetector::onExecute(RTC::UniqueId ec_id)
 				//特徴点検出
 				if(remake == true){
 					keypoints.clear();
-					GridAdaptedFeatureDetector detector_grb(new StarFeatureDetector(star_max, star_response, star_project, star_binarized, star_nonmax), grid_max, grid_rows, grid_cols);
+					GridAdaptedFeatureDetector detector_grb(new StarFeatureDetector(star_max, star_response, star_projected, star_binarized, star_nonmax), grid_max, grid_rows, grid_cols);
 					detector_grb.detect(gray_img, keypoints);
 				}
 			}else if(adapt == "Pyramid"){
@@ -441,7 +444,7 @@ RTC::ReturnCode_t CVFeatureDetector::onExecute(RTC::UniqueId ec_id)
 				//特徴点検出
 				if(remake == true){
 					keypoints.clear();
-					PyramidAdaptedFeatureDetector detector_pyr(new StarFeatureDetector(star_max, star_response, star_project, star_binarized, star_nonmax), pyramid_levels);
+					PyramidAdaptedFeatureDetector detector_pyr(new StarFeatureDetector(star_max, star_response, star_projected, star_binarized, star_nonmax), pyramid_levels);
 					detector_pyr.detect(gray_img, keypoints);
 				}
 			}else if(adapt == "Dynamic"){
@@ -460,7 +463,7 @@ RTC::ReturnCode_t CVFeatureDetector::onExecute(RTC::UniqueId ec_id)
 				//特徴点検出
 				if(remake == true){
 					keypoints.clear();
-					StarFeatureDetector detector_star(star_max, star_response, star_project, star_binarized, star_nonmax);
+					StarFeatureDetector detector_star(star_max, star_response, star_projected, star_binarized, star_nonmax);
 					detector_star.detect(gray_img, keypoints);
 				}
 			}
@@ -607,10 +610,10 @@ RTC::ReturnCode_t CVFeatureDetector::onExecute(RTC::UniqueId ec_id)
 
 			//特徴点を描画した画像をウィンドウに表示
 			if(m_img_view == "ON"){
-				namedWindow("featurePointsView",1);
-				imshow("featurePointsView", pre_img);
+				namedWindow("CVFeatureDetector : featurePointsView",1);
+				imshow("CVFeatureDetector : featurePointsView", pre_img);
 			}else{
-				destroyWindow("featurePointsView");
+				destroyWindow("CVFeatureDetector : featurePointsView");
 			}
 
 			setTimestamp(m_feature_points);
@@ -644,8 +647,8 @@ RTC::ReturnCode_t CVFeatureDetector::onError(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CVFeatureDetector::onReset(RTC::UniqueId ec_id)
 {
-	destroyWindow("receiveImage");
-	destroyWindow("featurePointsView");
+	destroyWindow("CVFeatureDetector : receiveImage");
+	destroyWindow("CVFeatureDetector : featurePointsView");
 
   return RTC::RTC_OK;
 }
@@ -780,7 +783,7 @@ bool equalCamImg(CameraImage &src_img,CameraImage &rec_img){
 		src_img.width	!= rec_img.width	||
 		src_img.pixels.length() != rec_img.pixels.length()){
 			src_img = rec_img;
-			cout<<"chImg"<<endl;
+			cout<<"CVFeatureDetector : chImg"<<endl;
 			return false;
 	}else{
 		return true;

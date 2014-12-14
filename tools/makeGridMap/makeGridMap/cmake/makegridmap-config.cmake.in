@@ -1,0 +1,54 @@
+# makeGridMap CMake config file
+#
+# This file sets the following variables:
+# makeGridMap_FOUND - Always TRUE.
+# makeGridMap_INCLUDE_DIRS - Directories containing the makeGridMap include files.
+# makeGridMap_IDL_DIRS - Directories containing the makeGridMap IDL files.
+# makeGridMap_LIBRARIES - Libraries needed to use makeGridMap.
+# makeGridMap_DEFINITIONS - Compiler flags for makeGridMap.
+# makeGridMap_VERSION - The version of makeGridMap found.
+# makeGridMap_VERSION_MAJOR - The major version of makeGridMap found.
+# makeGridMap_VERSION_MINOR - The minor version of makeGridMap found.
+# makeGridMap_VERSION_REVISION - The revision version of makeGridMap found.
+# makeGridMap_VERSION_CANDIDATE - The candidate version of makeGridMap found.
+
+message(STATUS "Found makeGridMap-@PROJECT_VERSION@")
+set(makeGridMap_FOUND TRUE)
+
+find_package(<dependency> REQUIRED)
+
+#set(makeGridMap_INCLUDE_DIRS
+#    "@CMAKE_INSTALL_PREFIX@/include/@PROJECT_NAME_LOWER@-@PROJECT_VERSION_MAJOR@"
+#    ${<dependency>_INCLUDE_DIRS}
+#    )
+#
+#set(makeGridMap_IDL_DIRS
+#    "@CMAKE_INSTALL_PREFIX@/include/@PROJECT_NAME_LOWER@-@PROJECT_VERSION_MAJOR@/idl")
+set(makeGridMap_INCLUDE_DIRS
+    "@CMAKE_INSTALL_PREFIX@/include/@CPACK_PACKAGE_FILE_NAME@"
+    ${<dependency>_INCLUDE_DIRS}
+    )
+set(makeGridMap_IDL_DIRS
+    "@CMAKE_INSTALL_PREFIX@/include/@CPACK_PACKAGE_FILE_NAME@/idl")
+
+
+if(WIN32)
+    set(makeGridMap_LIBRARIES
+        "@CMAKE_INSTALL_PREFIX@/@LIB_INSTALL_DIR@/@CMAKE_SHARED_LIBRARY_PREFIX@@PROJECT_NAME_LOWER@@CMAKE_STATIC_LIBRARY_SUFFIX@"
+        ${<dependency>_LIBRARIES}
+        )
+else(WIN32)
+    set(makeGridMap_LIBRARIES
+        "@CMAKE_INSTALL_PREFIX@/@LIB_INSTALL_DIR@/@CMAKE_SHARED_LIBRARY_PREFIX@@PROJECT_NAME_LOWER@@CMAKE_SHARED_LIBRARY_SUFFIX@"
+        ${<dependency>_LIBRARIES}
+        )
+endif(WIN32)
+
+set(makeGridMap_DEFINITIONS ${<dependency>_DEFINITIONS})
+
+set(makeGridMap_VERSION @PROJECT_VERSION@)
+set(makeGridMap_VERSION_MAJOR @PROJECT_VERSION_MAJOR@)
+set(makeGridMap_VERSION_MINOR @PROJECT_VERSION_MINOR@)
+set(makeGridMap_VERSION_REVISION @PROJECT_VERSION_REVISION@)
+set(makeGridMap_VERSION_CANDIDATE @PROJECT_VERSION_CANDIDATE@)
+

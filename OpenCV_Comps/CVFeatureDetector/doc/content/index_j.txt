@@ -99,7 +99,7 @@ CVFeatureDetectorは ``CVFeatureDetectorComp`` を実行（ ``${prefix}/componen
 パラメータ       データ型           デフォルト値     意味
 ================ ================== ================ ====
 01_ImageView     string             OFF              画像表示の選択
-02_Method        string             FAST             特徴検出のメソッドを選択するための変数
+02_Method        string             Good             特徴検出のメソッドを選択するための変数
 03_Adapter       string             NON              特徴検出のアダプタを選択するための変数
 04_FAST-threshold int                1                FAS()のパラメータ
 05_Good-maxCorners int                1000             GoodFeatureToTrack()のパラメータ

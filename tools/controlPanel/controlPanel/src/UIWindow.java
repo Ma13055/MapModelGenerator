@@ -47,6 +47,14 @@ public class UIWindow extends JFrame{
 		bar.add(m1);
 		setJMenuBar(bar);
 	}
+	
+	public void popInfoMessage(String str){
+		JOptionPane.showMessageDialog(this, str, "Info", JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	public void popErrMessage(String str){
+		JOptionPane.showMessageDialog(this, str, "Error",JOptionPane.ERROR_MESSAGE);
+	}
 
 	class TopMenue extends JMenu implements ActionListener{
 		/**

@@ -45,7 +45,7 @@ void drawContoursImage(vector<vector<Point> > cont,Mat &src_img,Scalar color,Str
 void drawContPointImage(vector<vector<Point> > vvp,Mat &src_img);
 
 //点データ群を画像に描画する
-void drawPointVector(vector<Point> vp,Mat &src_img,Scalar c);
+void drawPointVector(vector<Point> vp,Mat &src_img,Scalar c,int size);
 
 //与えられた座標が指す図形の輪郭点データを削除する
 bool eraseClickRect(Mat img,vector<vector<Point>> &cont,Point3D p);
@@ -114,7 +114,7 @@ static const char* convtolinemap_spec[] =
     "implementation_id", "convToLineMap",
     "type_name",         "convToLineMap",
     "description",       "輪郭情報と特徴点を基にラインマップへ変換する",
-    "version",           "3.0.0",
+    "version",           "3.1.0",
     "vendor",            "Masaru Tatekawa(SIT)",
     "category",          "Conversion",
     "activity_type",     "PERIODIC",
@@ -153,7 +153,8 @@ convToLineMap::convToLineMap(RTC::Manager* manager)
     m_drag_rectIn("draggedRect", m_drag_rect),
     m_modi_imgOut("modifyImage", m_modi_img),
     m_modi_img_pathOut("modifyImagePath", m_modi_img_path),
-    m_map_lineOut("compLineMap", m_map_line)
+    m_map_lineOut("compLineMap", m_map_line),
+    m_step_flagOut("stepFlag", m_step_flag)
 
     // </rtc-template>
 {
@@ -183,6 +184,7 @@ RTC::ReturnCode_t convToLineMap::onInitialize()
   // Set OutPort buffer
   addOutPort("modifyImage", m_modi_imgOut);
   addOutPort("modifyImagePath", m_modi_img_pathOut);
+  addOutPort("stepFlag", m_step_flagOut);
   addOutPort("compLineMap", m_map_lineOut);
   
   // Set service provider to Ports
@@ -281,6 +283,7 @@ RTC::ReturnCode_t convToLineMap::onActivated(RTC::UniqueId ec_id)
 	click_feature_point = Point();
 
 	cout<<"convToLineMap : onActivated : END"<<endl;
+
   return RTC::RTC_OK;
 }
 
@@ -383,6 +386,7 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 
 		//輪郭図形群を初期化
 		line_base.clear();
+		double before_slope = 0;
 
 		//輪郭点群と特徴点群を用いて輪郭図形群を作成
 		for(vector<vector<Point> >::iterator vvp_it = cont_data.begin() ; vvp_it != cont_data.end() ; ++vvp_it){
@@ -397,13 +401,10 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 				//iteratorの指す輪郭点
 				Point p = *vp_it;
 
-				//輪郭点から一番近い特徴点
-				Point near_p = getNearPoint(gray_color_img,keypoints,p);
-				
-				//輪郭点と特徴点の距離がm_thresholdの値以下の場合輪郭図形の頂点として保持
-				if(m_threshold > getPointToPointLength(p,near_p))line_base_points.push_back(near_p);
-
+				//輪郭点を図形の頂点として保持
+				line_base_points.push_back(p);
 			}
+
 			//保持した図形頂点群から、連続して重なっている点を削除
 			defragVector(line_base_points);
 			//図形が線分以上として成り立っている場合かつ、同じ形の点群が存在しない場合は輪郭図形として保持
@@ -450,6 +451,11 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 		next_cont_point = Point();
 		second_cont_point = Point();
 		click_feature_point = Point();
+
+
+		m_step_flag.data = 13;
+		setTimestamp(m_step_flag);
+		m_step_flagOut.write();
 
 		cout<<"convToLineMap : ContoursMedify"<<endl;
 	}
@@ -672,6 +678,10 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 			case 9:
 				//現在の輪郭データ群を、未処理輪郭データ群に上書き
 				reset_line_base = line_base;
+				m_step_flag.data = 8;
+				setTimestamp(m_step_flag);
+				m_step_flagOut.write();
+
 
 				break;
 
@@ -686,6 +696,9 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 			case 4:
 				//未処理輪郭データ群を、現在の輪郭データ群に上書き
 				line_base = reset_line_base;
+				m_step_flag.data = 9;
+				setTimestamp(m_step_flag);
+				m_step_flagOut.write();
 
 				break;
 
@@ -698,6 +711,11 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 				m_map_line = vectToSeq(line_base);
 				m_map_line.tm = src_cam_img.tm;
 				m_map_lineOut.write();
+
+				m_step_flag.data = 14;
+				setTimestamp(m_step_flag);
+				m_step_flagOut.write();
+
 
 				cout<<"convToLineMap : ContoursModifyFin"<<endl;
 
@@ -717,9 +735,9 @@ RTC::ReturnCode_t convToLineMap::onExecute(RTC::UniqueId ec_id)
 			if(add_click_step == 1)	drawPoints(src_gray_copy_img, click_cont_point, next_cont_point, back_cont_point);
 			else if(add_click_step == 2){
 				drawPoints(src_gray_copy_img, click_cont_point, second_cont_point);
-				drawPointVector(keypoints, src_gray_copy_img, Scalar(255,0,255));
+				drawPointVector(keypoints, src_gray_copy_img, Scalar(255,0,0),1);
 			}else if(move_click_step == 1){
-				drawPointVector(keypoints, src_gray_copy_img, Scalar(255,0,255));
+				drawPointVector(keypoints, src_gray_copy_img, Scalar(255,0,0),1);
 				circle(src_gray_copy_img, click_cont_point, 3, Scalar(0,255,0), -1);
 			}else{
 				//元画像のグレー画像に輪郭点データを描画
@@ -955,7 +973,7 @@ void drawContPointImage(vector<vector<Point> > vvp,Mat &src_img){
 		//描画の色を輪郭点ごとに変える
 		Scalar color = Scalar(rand()%256,rand()%256,rand()%256);
 
-		drawPointVector(*vvp_it,src_img,color);
+		drawPointVector(*vvp_it,src_img,color,1);
 	}
 }
 
@@ -966,11 +984,12 @@ void drawContPointImage(vector<vector<Point> > vvp,Mat &src_img){
  * @para vector<Point> vp	点データ群
  * @para Mat &src_img		描画対象画像
  * @para Scalar c			書き込みカラー
+ * @para int size			書き込む点のサイズ
  * @return void					
  */
-void drawPointVector(vector<Point> vp,Mat &src_img,Scalar color){
+void drawPointVector(vector<Point> vp,Mat &src_img,Scalar color,int size){
 	for(vector<Point>::iterator vp_it = vp.begin(); vp_it!=vp.end(); ++vp_it)
-		circle(src_img, *vp_it, 1, color, -1);
+		circle(src_img, *vp_it, size, color, -1);
 }
 
 /**
@@ -1077,7 +1096,7 @@ bool defragClickRect(Mat img,vector<vector<Point>> &cont,Point3D p){
             
 				// 辺は点pよりも右側にある。ただし、重ならない。(ルール4)
 				// 辺が点pと同じ高さになる位置を特定し、その時のxの値と点pのxの値を比較する。
-				double vt = (p.y - r[fp].y) / (r[ep].y - r[fp].y);
+				double vt = (double)(p.y - r[fp].y) / (double)(r[ep].y - r[fp].y);
 				if(p.x < (r[fp].x + (vt * (r[ep].x - r[fp].x)))) ++cn;
 			}
 		}
@@ -1599,3 +1618,4 @@ bool aloneVector(vector<Point> alone_vp,vector<vector<Point> > vvp){
 	}
 	return true;
 }
+

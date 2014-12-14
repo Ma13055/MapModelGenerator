@@ -38,8 +38,6 @@
 using namespace RTC;
 using namespace std;
 using namespace cv;
-
-
 /*!
  * @class CVFeatureDetector
  * @brief 与えられた画像に特徴点検出を行う
@@ -261,7 +259,7 @@ class CVFeatureDetector
   /*!
    * 特徴検出のメソッドを選択するための変数
    * - Name: string feature_method
-   * - DefaultValue: FAST
+   * - DefaultValue: Good
    * - Constraint: FAST - FAST()メソッドを用いた特徴検出
    *               Good -
    *               GoodFeaturesToTrack()クラスを用いた特徴検出
@@ -326,7 +324,7 @@ class CVFeatureDetector
   /*!
    * GoodFeatureToTrack()のパラメータ
    * - Name: double good_k
-   * - DefaultValue: 0,04
+   * - DefaultValue: 0.04
    * - Range: x>0
    */
   double m_good_k;
@@ -346,11 +344,11 @@ class CVFeatureDetector
   int m_star_response;
   /*!
    * StarDetector()のパラメータ
-   * - Name: int star_project
+   * - Name: int star_projected
    * - DefaultValue: 10
    * - Range: x>0
    */
-  int m_star_project;
+  int m_star_projected;
   /*!
    * StarDetector()のパラメータ
    * - Name: int star_binarized
@@ -513,7 +511,7 @@ class CVFeatureDetector
 	 //Starのパラメータ
 	 int star_max;
 	 int star_response;
-	 int star_project;
+	 int star_projected;
 	 int star_binarized;
 	 int star_nonmax;
 
@@ -543,8 +541,7 @@ class CVFeatureDetector
 	 Mat src_img;
 	 bool remake;	//再検出フラグ
 	 vector<cv::KeyPoint> keypoints;	//特徴点が入る変数
-
-
+  
   // </rtc-template>
 
   // <rtc-template block="private_operation">
