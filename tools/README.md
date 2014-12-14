@@ -12,7 +12,7 @@ tools
 * mapsManager - 地図モデル生成管理コンポーネント
 * controlPanel - UI(User Interface)コンポーネント
 * ThreeDimensionViewer - 3Dラインマップ可視化コンポーネント
-* tweakerLineMap - ラインマップ修正コンポーネント
+* tweakerOfLineMaps - ラインマップ修正コンポーネント
 * makeGridMap - グリッドマップ変換コンポーネント
 
 
