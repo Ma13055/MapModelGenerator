@@ -24,12 +24,17 @@ MapModelGenerator
 MapModelGenerator  
 |-OpenCV_Comps  
 |-tools  
+--MakeLineMaps
 
 * OpenCV_Comps
     * OpenCVの関数をコンポーネント化した、再利用性の高いコンポーネント
 * tools
     * UserInterface, OpenImageと、  
 その他簡易地図生成に特化して作られた再利用性の低いコンポーネント
+* MakeLineMaps
+    * C++で作成されているコンポーネント群のrtcdと、  
+その他toolsのJAVAコンポーネント群のJar、  
+ラインマップ生成に用いるコンポーネント群の自動ポート接続を行うrtshellが入っています
 
 
 仕様
