@@ -8,9 +8,12 @@ tools
 提供コンポーネントは以下の通りです。
 * OpenPicts - 複数画像ファイル送信コンポーネント
 * imageInpaint - 輪郭情報を用いた画像修復コンポーネント
-* convToLineMap - ラインナップ変換コンポーネント
+* convToLineMap - ラインマップ変換コンポーネント
 * mapsManager - 地図モデル生成管理コンポーネント
 * controlPanel - UI(User Interface)コンポーネント
+* ThreeDimensionViewer - 3Dラインマップ可視化コンポーネント
+* tweakerLineMap - ラインマップ修正コンポーネント
+* makeGridMap - グリッドマップ変換コンポーネント
 
 
 仕様
